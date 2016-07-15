@@ -10,3 +10,22 @@ git clone https://github.com/githuis/BolTDL.git
 cd BolTDL/BolTDL
 xbuild
 ```
+#Instructions
+| Key 	| Action                   	| Extra                                              	|
+|-----	|--------------------------	|----------------------------------------------------	|
+| O   	| Create a new task        	|                                                    	|
+| J   	| Select next task         	|                                                    	|
+| K   	| Select previous task     	|                                                    	|
+| DD  	| Delete selected task     	| Press D twice                                      	|
+| L   	| View task                	|                                                    	|
+| H   	| Exit (when viewing task) 	|                                                    	|
+| Q   	| Quit                     	| Can also be used in place of H when viewing a task 	|
+
+
+#Authors notes
+BolTDL uses the MIT licence, so feel free to use this software for whatever, as long as it complies with it.
+
+Bitcoin, if you like it/manage to sell a version of it, somehow.
+```bash
+1GAN5GpfmhBzih5pUSvJgeXd3RzF7hD9CS
+```
