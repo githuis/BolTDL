@@ -33,6 +33,11 @@ namespace BolTDL
             return Tasks[index];
         }
 
+		public void DeleteTask(int index)
+		{
+			Tasks.RemoveAt (index);
+		}
+
 
 
 

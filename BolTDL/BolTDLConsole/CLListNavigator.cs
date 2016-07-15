@@ -37,14 +37,16 @@ namespace BolTDLConsole
 
         private int _currentTaskIndex;
         private ToDoList _list;
-        private bool _cursorAtTitle = true;
+        //private bool _cursorAtTitle = true;
         private enum NavState { InList, OpenTask, AddingTask, PendingDelete };
         private NavState state;
+		//private bool runningOnMono;
 
         public CLListNavigator(ToDoList todolist)
         {
             list = todolist;
             state = NavState.InList;
+			//runningOnMono = Type.GetType ("Mono.Runtime") != null;
         }
 
         public void FindTask()
@@ -148,7 +150,7 @@ namespace BolTDLConsole
                 else if (key == ConsoleKey.D)
                 {
                     state = NavState.PendingDelete;
-                    GoList();
+					PrintList ();
                 }
                 else
                 {
@@ -168,13 +170,30 @@ namespace BolTDLConsole
                     //Edit
                     Navigate();
                 }
+				else if (key == ConsoleKey.J || key == ConsoleKey.K)
+				{
+					//Do nothing
+					OpenTask();
+					Navigate ();
+				}
                 else
                 {
                     GoList();
                 }
             }
-
-            
+			//Navigation for when pending a delete
+			else if(state == NavState.PendingDelete)
+			{
+				if(key == ConsoleKey.D)
+				{
+					DeleteCurrentTask();
+					GoList ();
+				}
+				else
+				{
+					GoList ();
+				}
+			}
         }
 
         private void Save()
@@ -190,6 +209,7 @@ namespace BolTDLConsole
 
         private void OpenTask()
         {
+			state = NavState.OpenTask;
             BolTask currentTask = list.GetTaskAt(CurrentTaskIndex);
             Console.WriteLine("Title");
             Console.WriteLine("    " + currentTask.Title);
@@ -199,20 +219,28 @@ namespace BolTDLConsole
 
         private void Clear()
         {
-            Console.SetCursorPosition(0, 0);
+			
+			//Linux (maybe osx)
+			if(/*runningOnMono*/ false)
+				Console.Clear();
+			else
+			{
+				//Windows
+				Console.SetCursorPosition(0, 0);
 
-            for (int i = 0; i < Console.WindowHeight; i++)
-            {
-                Console.Write(new string(' ', Console.BufferWidth - Console.CursorLeft));
-            }
-            Console.SetCursorPosition(0, 0);
-
+				for (int i = 0; i < Console.WindowHeight; i++)
+				{
+					Console.Write(new string(' ', Console.WindowWidth - Console.CursorLeft));
+				}
+				Console.SetCursorPosition(0, 0);
+			}
         }
 
         private void NavAddTask()
         {
             state = NavState.AddingTask;
             Clear();
+			Console.WriteLine ("");
             Console.Write("Enter new title: ");
             string t = Console.ReadLine();
             Console.Write("Enter description (optional): ");
@@ -220,5 +248,10 @@ namespace BolTDLConsole
             list.AddTask(new BolTask(t, d));
         }
 
+		private void DeleteCurrentTask()
+		{
+			list.DeleteTask (CurrentTaskIndex);
+			CurrentTaskIndex = 0;
+		}
     }
 }
