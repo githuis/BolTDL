@@ -150,7 +150,13 @@ namespace BolTDLConsole
                 else if (key == ConsoleKey.D)
                 {
                     state = NavState.PendingDelete;
-					PrintList ();
+                    PrintList();
+                }
+                else if (key == ConsoleKey.C)
+                {
+                    DeleteCurrentTask();
+                    NavAddTask();
+                    PrintList();
                 }
                 else
                 {
