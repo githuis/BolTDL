@@ -1,5 +1,6 @@
 # BolTDL
 Bolhuis' ToDo Lists: A tiny organization program with vim-like keybinds.
+Tested working on Windows 10 and Archlinux (x64).
 
 #Build
 There are two ways to build. The first way is to open the solution with Visual Studio or something alike and build in release mode from there.
@@ -18,6 +19,7 @@ xbuild
 | K   	| Select previous task     	|                                                    	|
 | DD  	| Delete selected task     	| Press D twice                                      	|
 | L   	| View task                	|                                                    	|
+| C   	| Change task               | Rewrite a task, same as 'DDO'                     	|
 | H   	| Exit (when viewing task) 	|                                                    	|
 | Q   	| Quit                     	| Can also be used in place of H when viewing a task 	|
 
