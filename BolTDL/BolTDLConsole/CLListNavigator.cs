@@ -156,7 +156,7 @@ namespace BolTDLConsole
                 {
                     DeleteCurrentTask();
                     NavAddTask();
-                    PrintList();
+                    GoList();
                 }
                 else
                 {
