@@ -226,20 +226,16 @@ namespace BolTDLConsole
         private void Clear()
         {
 			
-			//Linux (maybe osx)
-			if(/*runningOnMono*/ false)
-				Console.Clear();
-			else
-			{
-				//Windows
-				Console.SetCursorPosition(0, 0);
 
-				for (int i = 0; i < Console.WindowHeight; i++)
-				{
-					Console.Write(new string(' ', Console.WindowWidth - Console.CursorLeft));
-				}
-				Console.SetCursorPosition(0, 0);
+			//Windows
+			Console.SetCursorPosition(0, 0);
+
+			for (int i = 0; i < Console.WindowHeight; i++)
+			{
+				Console.Write(new string(' ', Console.WindowWidth - Console.CursorLeft));
 			}
+			Console.SetCursorPosition(0, 0);
+
         }
 
         private void NavAddTask()
@@ -251,6 +247,8 @@ namespace BolTDLConsole
             string t = Console.ReadLine();
             Console.Write("Enter description (optional): ");
             string d = Console.ReadLine();
+			if (t == "")
+				return;
             list.AddTask(new BolTask(t, d));
         }
 
