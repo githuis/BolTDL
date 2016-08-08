@@ -242,7 +242,6 @@ namespace BolTDLConsole
         {
             state = NavState.AddingTask;
             Clear();
-			Console.WriteLine ("");
             Console.Write("Enter new title: ");
             string t = Console.ReadLine();
             Console.Write("Enter description (optional): ");
