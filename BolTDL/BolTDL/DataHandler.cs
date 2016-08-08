@@ -15,6 +15,7 @@ namespace BolTDL
         private static bool exists;
         const string fileName = "save.boltd";
         const string backupFileName = "save.boltd.old";
+        const string backupErrorFileName = "backup.boltd";
 
         public static void Save(ToDoList list)
         {
@@ -47,16 +48,26 @@ namespace BolTDL
             SetUp();
             ToDoList t = new ToDoList();
 
-            if (exists)
+            try
             {
-                string line = "";
-                using (StreamReader reader = File.OpenText(filePath))
+                if (exists)
                 {
-                    while ((line = reader.ReadLine()) != null)
+                    string line = "";
+                    using (StreamReader reader = File.OpenText(filePath))
                     {
-                        t.AddTask(JsonConvert.DeserializeObject<BolTask>(line));
+                        while ((line = reader.ReadLine()) != null)
+                        {
+                            t.AddTask(JsonConvert.DeserializeObject<BolTask>(line));
+                        }
                     }
                 }
+            }
+            catch (JsonReaderException e) //Error parsing JSON from save file
+            {
+                File.Delete(backupErrorFileName);
+                File.Move(fileName, backupErrorFileName);
+                t.AddTask(new BolTask("There was an error loading your save file, open for more info.", "Please check backup.boltd in your BolTDL folder.\n" +
+                    "It should contain the data which was attempted to be loaded. Perhaps you can recover it manually.\n\nThe error message is as follows:\n" + e.Message, TaskPriority.HIGH));
             }
 
             return t;
