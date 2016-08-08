@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace BolTDL
 {
@@ -14,7 +15,6 @@ namespace BolTDL
         private static bool exists;
         const string fileName = "save.boltd";
         const string backupFileName = "save.boltd.old";
-        const char splitChar = '\u29ea';
 
         public static void Save(ToDoList list)
         {
@@ -33,14 +33,13 @@ namespace BolTDL
                 for (int i = 0; i < list.Length; i++)
                 {
                     BolTask curTask = list.GetTaskAt(i);
-                    string s = string.Format("{0}{1}{2}\n", curTask.Title, splitChar, curTask.Description);
+                    string s = JsonConvert.SerializeObject(list.GetTaskAt(i)) + "\n";
                     info = new UTF8Encoding(true).GetBytes(s);
 
                     stream.Write(info, 0, info.Length);
                     offset += info.Length;
                 }
             }
-
         }
 
         public static ToDoList Load()
@@ -48,22 +47,20 @@ namespace BolTDL
             SetUp();
             ToDoList t = new ToDoList();
 
-            if(exists)
+            if (exists)
             {
-                string allInfo = "";
+                string line = "";
                 using (StreamReader reader = File.OpenText(filePath))
                 {
-                    while ((allInfo = reader.ReadLine()) != null)
+                    while ((line = reader.ReadLine()) != null)
                     {
-                        string[] x = allInfo.Split(splitChar);
-                        if(x.Length >= 2)
-                            t.AddTask(new BolTask(x[0], x[1]));
+                        t.AddTask(JsonConvert.DeserializeObject<BolTask>(line));
                     }
                 }
             }
 
             return t;
-        }   
+        }
 
         private static void SetUp()
         {

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace BolTDL
 {
@@ -18,6 +19,7 @@ namespace BolTDL
             Description = description;
         }
 
+        [JsonConstructor]
         public BolTask(string title, string description, TaskPriority priority)
         {
             Title = title;
