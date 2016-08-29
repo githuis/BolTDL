@@ -12,6 +12,7 @@ cd BolTDL/BolTDL
 xbuild
 ```
 #Instructions
+Lower case input / don't hold shift, as the application doesn't seem to like that.
 | Key 	| Action                   	| Extra                                              	|
 |-----	|--------------------------	|----------------------------------------------------	|
 | O   	| Create a new task        	|                                                    	|
