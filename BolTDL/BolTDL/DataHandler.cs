@@ -13,18 +13,25 @@ namespace BolTDL
         static string curPath;
         static string filePath;
         private static bool exists;
+        private static string taskListname;
+        const string fileExtension = ".boltd";
         const string fileName = "save.boltd";
         const string backupFileName = "save.boltd.old";
         const string backupErrorFileName = "backup.boltd";
 
         public static void Save(ToDoList list)
         {
-            SetUp();
+            taskListname = list.Name;
+            SetUp(taskListname);
 
-            if (exists)
+            try
             {
-                File.Delete(backupFileName);
-                File.Move(fileName, backupFileName);
+                File.Delete(taskListname + fileExtension);
+                File.Move(taskListname + fileExtension, taskListname + backupFileName);
+            }
+            catch (System.IO.FileNotFoundException)
+            {
+                throw;
             }
 
             using (FileStream stream = File.Create(filePath))
@@ -43,21 +50,42 @@ namespace BolTDL
             }
         }
 
-        public static ToDoList Load()
+        public static List<ToDoList> Load()
         {
-            SetUp();
-            ToDoList t = new ToDoList();
+            LoadSetUp();
+            string[] files = Directory.GetFiles(curPath, "*.boltdl");
+            List<ToDoList> lists = new List<ToDoList>();
+
+            if (files.Length == 0)
+            {
+                lists.Add(new ToDoList("New Tab"));
+                return lists;
+            }
 
             try
             {
-                if (exists)
+                //if (exists)
+                //{
+                //    string line = "";
+                //    using (StreamReader reader = File.OpenText(filePath))
+                //    {
+                //        while ((line = reader.ReadLine()) != null)
+                //        {
+                //            t.AddTask(JsonConvert.DeserializeObject<BolTask>(line));
+                //        }
+                //    }
+                //}
+
+                string line;
+                for (int i = 0; i < files.Length; i++)
                 {
-                    string line = "";
-                    using (StreamReader reader = File.OpenText(filePath))
+                    line = "";
+                    lists.Add(new ToDoList("List" + i.ToString()));
+                    using (StreamReader reader = File.OpenText(files[i]))
                     {
-                        while ((line = reader.ReadLine()) != null)
+                        while((line = reader.ReadLine()) != null)
                         {
-                            t.AddTask(JsonConvert.DeserializeObject<BolTask>(line));
+                            lists[i].AddTask(JsonConvert.DeserializeObject<BolTask>(line));
                         }
                     }
                 }
@@ -66,18 +94,23 @@ namespace BolTDL
             {
                 File.Delete(backupErrorFileName);
                 File.Move(fileName, backupErrorFileName);
-                t.AddTask(new BolTask("There was an error loading your save file, open for more info.", "Please check backup.boltd in your BolTDL folder.\n" +
+                lists[0].AddTask(new BolTask("There was an error loading your save file, open for more info.", "Please check backup.boltd in your BolTDL folder.\n" +
                     "It should contain the data which was attempted to be loaded. Perhaps you can recover it manually.\n\nThe error message is as follows:\n" + e.Message, TaskPriority.HIGH));
             }
 
-            return t;
+            return lists;
         }
 
-        private static void SetUp()
+        private static void SetUp(string taskName)
         {
             curPath = Directory.GetCurrentDirectory();
-            filePath = Path.Combine(curPath, fileName);
+            filePath = Path.Combine(curPath, taskName + fileExtension);
             exists = File.Exists(filePath);
+        }
+
+        private static void LoadSetUp()
+        {
+            curPath = Directory.GetCurrentDirectory();
         }
     }
 }

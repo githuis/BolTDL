@@ -8,6 +8,8 @@ namespace BolTDL
 {
     public class ToDoList
     {
+
+        public string Name { get; private set; }
         public int Length
         {
             get
@@ -22,9 +24,14 @@ namespace BolTDL
             Tasks = new List<BolTask>();
         }
 
+        public ToDoList(string name)
+        {
+            Tasks = new List<BolTask>();
+        }
+
         public void AddTask(BolTask tsk)
         {
-            //Validate?
+            //TODO Validate input?
             Tasks.Add(tsk);
         }
 
@@ -33,13 +40,9 @@ namespace BolTDL
             return Tasks[index];
         }
 
-		public void DeleteTask(int index)
+		public void DeleteTaskAt (int index)
 		{
-			Tasks.RemoveAt (index);
+			Tasks.RemoveAt(index);
 		}
-
-
-
-
     }
 }

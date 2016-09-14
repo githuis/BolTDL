@@ -35,7 +35,17 @@ namespace BolTDLConsole
             }
         }
 
-        private int _currentTaskIndex;
+        private int _currentTabCount
+        {
+            get
+            {
+                return listTabs.Count + 1;
+            }
+        }
+
+        public List<ToDoList> listTabs;
+
+        private int _currentTaskIndex, _currentTab;
         private ToDoList _list;
         //private bool _cursorAtTitle = true;
         private enum NavState { InList, OpenTask, AddingTask, PendingDelete };
@@ -46,7 +56,20 @@ namespace BolTDLConsole
         {
             list = todolist;
             state = NavState.InList;
+            listTabs = new List<ToDoList>();
+            listTabs.Add(todolist);
+            _currentTab = 0;
+
 			//runningOnMono = Type.GetType ("Mono.Runtime") != null;
+        }
+
+        public CLListNavigator(List<ToDoList> todolists)
+        {
+            if(todolists.Count > 0)
+                list = todolists[0];
+            state = NavState.InList;
+            listTabs = todolists;
+            _currentTab = 0;
         }
 
         public void FindTask()
@@ -70,12 +93,22 @@ namespace BolTDLConsole
             }
         }
 
+        public void NextTab()
+        {
+            _currentTab++;
+            if (_currentTab >= _currentTabCount)
+                _currentTab = 0;
+
+            list = listTabs[_currentTab];
+        }
+
         public void PrintList()
         {
             Clear();
 
             if(list.Length > 0)
             {
+                Console.WriteLine("Tab: " + list.Name);
                 BolTask currentTask;
                 for (int i = 0; i < list.Length; i++)
                 {
@@ -157,6 +190,15 @@ namespace BolTDLConsole
                     DeleteCurrentTask();
                     NavAddTask();
                     GoList();
+                }
+                else if (key == ConsoleKey.N)
+                {
+                    listTabs.Add(new ToDoList());
+                    GoList();
+                }
+                else if (key == ConsoleKey.T)
+                {
+                    //Next tab
                 }
                 else
                 {
@@ -253,7 +295,7 @@ namespace BolTDLConsole
 
 		private void DeleteCurrentTask()
 		{
-			list.DeleteTask (CurrentTaskIndex);
+			list.DeleteTaskAt (CurrentTaskIndex);
 			CurrentTaskIndex = 0;
 		}
     }
