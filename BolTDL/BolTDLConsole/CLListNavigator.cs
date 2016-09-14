@@ -114,7 +114,7 @@ namespace BolTDLConsole
 
             if(list.Length > 0)
             {
-				Console.WriteLine("Tab: " + list.Name + GetOtherTabNames());
+                WriteTabs();
                 BolTask currentTask;
                 for (int i = 0; i < list.Length; i++)
                 {
@@ -129,6 +129,7 @@ namespace BolTDLConsole
             }
             else
             {
+                WriteTabs();
                 Console.Write("You have no tasks! Press (O) to create a new task");
             }
 
@@ -274,6 +275,9 @@ namespace BolTDLConsole
 
         private void OpenTask()
         {
+            if (list.Length <= 0)
+                return;
+
 			state = NavState.OpenTask;
             BolTask currentTask = list.GetTaskAt(CurrentTaskIndex);
             Console.WriteLine("Title");
@@ -284,8 +288,6 @@ namespace BolTDLConsole
 
         private void Clear()
         {
-			
-
 			//Windows
 			Console.SetCursorPosition(0, 0);
 
@@ -294,7 +296,6 @@ namespace BolTDLConsole
 				Console.Write(new string(' ', Console.WindowWidth - Console.CursorLeft));
 			}
 			Console.SetCursorPosition(0, 0);
-
         }
 
         private void NavAddTask()
@@ -330,18 +331,30 @@ namespace BolTDLConsole
 			Save ();
 		}
 
-		private string GetOtherTabNames()
-		{
-			string s = "";
-
-			for (int i = 0; i < _currentTabCount; i++)
-			{
-				if (i == _currentTab) continue;
-				s += "|  " + listTabs [i].Name;
-			}
+        private void WriteTabs()
+        {
+            ConsoleColor oldForeground = Console.ForegroundColor;
+            ConsoleColor oldBackground = Console.BackgroundColor;
 
 
-			return s;
-		}
+            for (int i = 0; i < _currentTabCount; i++)
+            {
+                if(i == _currentTab)
+                {
+                    Console.ForegroundColor = ConsoleColor.Black;
+                    Console.BackgroundColor = ConsoleColor.White;
+
+                    Console.Write(listTabs[i].Name + "   ");
+
+                    Console.ForegroundColor = oldForeground;
+                    Console.BackgroundColor = oldBackground;
+                }
+                else
+                {
+                    Console.Write(listTabs[i].Name + "   ");
+                }
+            }
+            Console.WriteLine("");
+        }
     }
 }
