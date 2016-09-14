@@ -12,11 +12,10 @@ namespace BolTDL
     {
         static string curPath;
         static string filePath;
-        private static bool exists;
         private static string taskListname;
         const string fileExtension = ".boltd";
         const string fileName = "save.boltd";
-        const string backupFileName = "save.boltd.old";
+        const string backupFileName = ".boltd.old";
         const string backupErrorFileName = "backup.boltd";
 
         public static void Save(ToDoList list)
@@ -26,11 +25,14 @@ namespace BolTDL
 
             try
             {
-                File.Delete(taskListname + fileExtension);
-                File.Move(taskListname + fileExtension, taskListname + backupFileName);
+				if(File.Exists(Path.Combine(curPath, taskListname + backupFileName)))
+					File.Delete(taskListname + backupFileName);
+				if(File.Exists(Path.Combine(curPath, taskListname + fileExtension)))
+                	File.Move(taskListname + fileExtension, taskListname + backupFileName);
             }
             catch (System.IO.FileNotFoundException)
             {
+				//TODO FIX
                 throw;
             }
 
@@ -53,7 +55,8 @@ namespace BolTDL
         public static List<ToDoList> Load()
         {
             LoadSetUp();
-            string[] files = Directory.GetFiles(curPath, "*.boltdl");
+            string[] files = Directory.GetFiles(curPath, "*.boltd");
+
             List<ToDoList> lists = new List<ToDoList>();
 
             if (files.Length == 0)
@@ -64,23 +67,11 @@ namespace BolTDL
 
             try
             {
-                //if (exists)
-                //{
-                //    string line = "";
-                //    using (StreamReader reader = File.OpenText(filePath))
-                //    {
-                //        while ((line = reader.ReadLine()) != null)
-                //        {
-                //            t.AddTask(JsonConvert.DeserializeObject<BolTask>(line));
-                //        }
-                //    }
-                //}
-
                 string line;
                 for (int i = 0; i < files.Length; i++)
                 {
                     line = "";
-                    lists.Add(new ToDoList("List" + i.ToString()));
+					lists.Add(new ToDoList(Path.GetFileName(files[i]).Replace(".boltd", "")));
                     using (StreamReader reader = File.OpenText(files[i]))
                     {
                         while((line = reader.ReadLine()) != null)
@@ -101,11 +92,21 @@ namespace BolTDL
             return lists;
         }
 
+		public static bool TryDeleteSave(string listName)
+		{
+			LoadSetUp ();
+			string p = Path.Combine (curPath, listName + fileExtension);
+			bool exists = File.Exists (p);
+			if (exists)
+				File.Delete (p);
+
+			return exists && !File.Exists(p);
+		}
+
         private static void SetUp(string taskName)
         {
             curPath = Directory.GetCurrentDirectory();
             filePath = Path.Combine(curPath, taskName + fileExtension);
-            exists = File.Exists(filePath);
         }
 
         private static void LoadSetUp()

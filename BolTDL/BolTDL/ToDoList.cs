@@ -27,7 +27,13 @@ namespace BolTDL
         public ToDoList(string name)
         {
             Tasks = new List<BolTask>();
+			Name = name;
         }
+
+		public void SetName(string newName)
+		{
+			Name = newName;
+		}
 
         public void AddTask(BolTask tsk)
         {

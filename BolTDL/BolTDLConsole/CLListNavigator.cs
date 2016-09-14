@@ -39,7 +39,7 @@ namespace BolTDLConsole
         {
             get
             {
-                return listTabs.Count + 1;
+                return listTabs.Count;
             }
         }
 
@@ -48,7 +48,7 @@ namespace BolTDLConsole
         private int _currentTaskIndex, _currentTab;
         private ToDoList _list;
         //private bool _cursorAtTitle = true;
-        private enum NavState { InList, OpenTask, AddingTask, PendingDelete };
+        private enum NavState { InList, OpenTask, AddingTask, PendingDelete, RenamingTab };
         private NavState state;
 		//private bool runningOnMono;
 
@@ -102,13 +102,19 @@ namespace BolTDLConsole
             list = listTabs[_currentTab];
         }
 
+		public void GotoNewTab()
+		{
+			_currentTab = _currentTabCount - 1;
+			list = listTabs [_currentTab];
+		}
+
         public void PrintList()
         {
             Clear();
 
             if(list.Length > 0)
             {
-                Console.WriteLine("Tab: " + list.Name);
+				Console.WriteLine("Tab: " + list.Name + GetOtherTabNames());
                 BolTask currentTask;
                 for (int i = 0; i < list.Length; i++)
                 {
@@ -193,13 +199,22 @@ namespace BolTDLConsole
                 }
                 else if (key == ConsoleKey.N)
                 {
-                    listTabs.Add(new ToDoList());
+                    listTabs.Add(new ToDoList("New unnamed tab"));
+					GotoNewTab ();
+					RenameTab ();
                     GoList();
                 }
                 else if (key == ConsoleKey.T)
                 {
-                    //Next tab
+					CurrentTaskIndex = 0;
+					NextTab ();
+					GoList ();
                 }
+				else if (key == ConsoleKey.R)
+				{
+					RenameTab ();
+					GoList ();
+				}
                 else
                 {
                     state = NavState.InList;
@@ -246,7 +261,9 @@ namespace BolTDLConsole
 
         private void Save()
         {
-            DataHandler.Save(list);
+			foreach (var list in listTabs) {
+				DataHandler.Save (list);
+			}
         }
 
         private void GoList()
@@ -297,6 +314,34 @@ namespace BolTDLConsole
 		{
 			list.DeleteTaskAt (CurrentTaskIndex);
 			CurrentTaskIndex = 0;
+		}
+
+		private void RenameTab()
+		{
+			state = NavState.RenamingTab;
+			Clear ();
+
+			Console.WriteLine ("Enter new name for tab " + list.Name);
+			string newName = Console.ReadLine();
+			if(newName == "")
+				newName = "Unnamed tab";
+			DataHandler.TryDeleteSave (list.Name);
+			list.SetName (newName);
+			Save ();
+		}
+
+		private string GetOtherTabNames()
+		{
+			string s = "";
+
+			for (int i = 0; i < _currentTabCount; i++)
+			{
+				if (i == _currentTab) continue;
+				s += "|  " + listTabs [i].Name;
+			}
+
+
+			return s;
 		}
     }
 }
