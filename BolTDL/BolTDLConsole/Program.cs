@@ -12,6 +12,7 @@ namespace BolTDLConsole
         static void Main(string[] args)
         {
             CLListNavigator nav = new CLListNavigator(DataHandler.Load());
+            nav.LoadSettings();
             Console.Title = "BolTDL";
             nav.PrintList();
         }

@@ -45,6 +45,7 @@ namespace BolTDLConsole
 
         public List<ToDoList> listTabs;
 
+        private BolTDLConsoleSettings settings;
         private int _currentTaskIndex, _currentTab;
         private ToDoList _list;
         //private bool _cursorAtTitle = true;
@@ -168,7 +169,7 @@ namespace BolTDLConsole
                     PrevoiusTask();
                     GoList();
                 }
-                else if (key == ConsoleKey.L)
+                else if (key == ConsoleKey.L && ListIsPopulated())
                 {
                     OpenTask();
                     Navigate();
@@ -187,14 +188,13 @@ namespace BolTDLConsole
                     Save();
                     GoList();
                 }
-                else if (key == ConsoleKey.D)
+                else if (key == ConsoleKey.D && ListIsPopulated())
                 {
                     state = NavState.PendingDelete;
                     PrintList();
                 }
-                else if (key == ConsoleKey.C)
+                else if (key == ConsoleKey.C && ListIsPopulated())
                 {
-                    DeleteCurrentTask();
                     NavAddTask();
                     GoList();
                 }
@@ -248,7 +248,7 @@ namespace BolTDLConsole
 			//Navigation for when pending a delete
 			else if(state == NavState.PendingDelete)
 			{
-				if(key == ConsoleKey.D)
+				if(key == ConsoleKey.D && ListIsPopulated())
 				{
 					DeleteCurrentTask();
 					GoList ();
@@ -275,15 +275,17 @@ namespace BolTDLConsole
 
         private void OpenTask()
         {
-            if (list.Length <= 0)
-                return;
-
 			state = NavState.OpenTask;
             BolTask currentTask = list.GetTaskAt(CurrentTaskIndex);
             Console.WriteLine("Title");
             Console.WriteLine("    " + currentTask.Title);
-            Console.WriteLine("Description");
-            Console.WriteLine("    " + currentTask.Description);
+
+            if(settings.useDescriptions)
+            {
+                Console.WriteLine("Description");
+                Console.WriteLine("    " + currentTask.Description);
+            }
+
         }
 
         private void Clear()
@@ -304,11 +306,17 @@ namespace BolTDLConsole
             Clear();
             Console.Write("Enter new title: ");
             string t = Console.ReadLine();
-            Console.Write("Enter description (optional): ");
-            string d = Console.ReadLine();
-			if (t == "")
-				return;
-            list.AddTask(new BolTask(t, d));
+            if (settings.useDescriptions)
+            {
+                Console.Write("Enter description (optional): ");
+                string d = Console.ReadLine();
+                if (t == "")
+                    return;
+                list.AddTask(new BolTask(t, d));
+            }
+
+            list.AddTask(new BolTask(t, ""));
+            
         }
 
 		private void DeleteCurrentTask()
@@ -336,18 +344,23 @@ namespace BolTDLConsole
             ConsoleColor oldForeground = Console.ForegroundColor;
             ConsoleColor oldBackground = Console.BackgroundColor;
 
-
             for (int i = 0; i < _currentTabCount; i++)
             {
                 if(i == _currentTab)
                 {
-                    Console.ForegroundColor = ConsoleColor.Black;
-                    Console.BackgroundColor = ConsoleColor.White;
+                    if(settings.useColors)
+                    {
+                        Console.ForegroundColor = ConsoleColor.Black;
+                        Console.BackgroundColor = ConsoleColor.White;
+                    }
 
                     Console.Write(listTabs[i].Name + "   ");
 
-                    Console.ForegroundColor = oldForeground;
-                    Console.BackgroundColor = oldBackground;
+                    if(settings.useColors)
+                    {
+                        Console.ForegroundColor = oldForeground;
+                        Console.BackgroundColor = oldBackground;
+                    }
                 }
                 else
                 {
@@ -355,6 +368,26 @@ namespace BolTDLConsole
                 }
             }
             Console.WriteLine("");
+        }
+
+        private bool ListIsPopulated()
+        {
+            return list.Length > 0;
+        }
+
+        public void LoadSettings()
+        {
+            string json = DataHandler.ImportSettings(BolTDLConsoleSettings.fileName);
+
+            if(json == "")
+            {
+                settings = new BolTDLConsoleSettings();
+                settings.ExportSettings();
+            }
+            else
+            {
+                settings = BolTDLConsoleSettings.SettingsFromJson(DataHandler.ImportSettings(BolTDLConsoleSettings.fileName));
+            }
         }
     }
 }

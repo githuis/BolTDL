@@ -1,9 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using Newtonsoft.Json;
 
 namespace BolTDL
@@ -112,6 +110,62 @@ namespace BolTDL
         private static void LoadSetUp()
         {
             curPath = Directory.GetCurrentDirectory();
+        }
+
+        /// <summary>
+        /// Use this method to save settings for whatever frontend is using the BolTDL Core
+        /// </summary>
+        /// <param name="jsonSettings">The settings, in json format</param>
+        public static void ExportSettings(string settingsName, string jsonSettings)
+        {
+            LoadSetUp();
+            string file = Path.Combine(curPath, settingsName);
+
+            if (File.Exists(file))
+                File.Delete(file);
+
+            using (FileStream stream = File.Create(file))
+            {
+                Byte[] info;
+                int offset = 0;
+
+                info = new UTF8Encoding(true).GetBytes(jsonSettings);
+
+                stream.Write(info, 0, info.Length);
+            }
+            
+        }
+
+        public static string ImportSettings(string settingsName)
+        {
+            LoadSetUp();
+            string json = "";
+
+            try
+            {
+                string line = "";
+                string file = Path.Combine(curPath, settingsName);
+                if(File.Exists(file))
+                {
+
+                    using (StreamReader reader = File.OpenText(file))
+                    {
+                        while( (line = reader.ReadLine()) != null)
+                        {
+                            json += line;
+                        }
+                    }
+                }
+            }
+            catch (JsonReaderException e)
+            {
+                //TODO FIX
+                Console.WriteLine("Error loading json, heres the error code: " + e.Message);
+                throw;
+            }
+
+            return json;
+
         }
     }
 }
