@@ -353,6 +353,10 @@ namespace BolTDLConsole
                         Console.ForegroundColor = ConsoleColor.Black;
                         Console.BackgroundColor = ConsoleColor.White;
                     }
+                    else
+                    {
+                        Console.Write("> ");
+                    }
 
                     Console.Write(listTabs[i].Name + "   ");
 
