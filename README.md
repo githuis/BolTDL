@@ -24,6 +24,9 @@ Lower case input / don't hold shift, as the application doesn't seem to like tha
 | L   	| View task                	|                                                    	|
 | C   	| Change task               | Rewrite a task, same as 'DDO'                     	|
 | H   	| Exit (when viewing task) 	|                                                    	|
+| N   	| Create a new tab      	|                                                    	|
+| T   	| Select next tab       	|                                                    	|
+| R   	| Rename current tab     	|                                                    	|
 | Q   	| Quit                     	| Can also be used in place of H when viewing a task 	|
 
 
