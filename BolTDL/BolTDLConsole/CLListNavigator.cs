@@ -195,7 +195,9 @@ namespace BolTDLConsole
                 }
                 else if (key == ConsoleKey.C && ListIsPopulated())
                 {
-                    NavAddTask();
+                    string name = list.GetTaskAt(_currentTaskIndex).Title;
+                    list.DeleteTaskAt(_currentTaskIndex);
+                    NavAddTask(name);
                     GoList();
                 }
                 else if (key == ConsoleKey.N)
@@ -313,10 +315,33 @@ namespace BolTDLConsole
                 if (t == "")
                     return;
                 list.AddTask(new BolTask(t, d));
+
+                return;
             }
 
             list.AddTask(new BolTask(t, ""));
             
+        }
+
+        private void NavAddTask(string oldTaskName)
+        {
+
+            state = NavState.AddingTask;
+            Clear();
+            Console.WriteLine("Enter new title for task: " + oldTaskName);
+            string t = Console.ReadLine();
+            if (settings.useDescriptions)
+            {
+                Console.Write("Enter description (optional): ");
+                string d = Console.ReadLine();
+                if (t == "")
+                    return;
+                list.AddTask(new BolTask(t, d));
+
+                return;
+            }
+
+            list.AddTask(new BolTask(t, ""));
         }
 
 		private void DeleteCurrentTask()
