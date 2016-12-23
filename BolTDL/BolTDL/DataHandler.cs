@@ -48,7 +48,63 @@ namespace BolTDL
                     offset += info.Length;
                 }
             }
+
+
         }
+
+		public static void ListSave(List<ToDoList> list)
+		{
+			SetUp ("MyList");
+			using (FileStream stream = File.Create(filePath))
+			{
+				Byte[] info;
+				string s = JsonConvert.SerializeObject(list, Formatting.Indented);
+				info = new UTF8Encoding (true).GetBytes (s);
+
+				stream.Write (info, 0, info.Length);
+
+			}
+		}
+
+		public static List<ToDoList> ListLoad()
+		{
+			string currentPath = Directory.GetCurrentDirectory ();
+			string[] listFiles = Directory.GetFiles (currentPath, "MyList.boltd");
+			string listFile = listFiles?[0];
+
+			List<ToDoList> lists = new List<ToDoList> ();
+
+			if(listFile == "")
+			{
+				lists.Add (new ToDoList ("Newtab"));
+				return lists;
+			}
+				
+			try
+			{
+				string json = "";
+				using (StreamReader sr = File.OpenText(listFile))
+				{
+					string line = "";
+					while((line = sr.ReadLine()) != null)
+					{
+						json += line;
+					}
+				}
+					
+
+				lists = JsonConvert.DeserializeObject<List<ToDoList>>(json);
+
+			} 
+			catch (Exception ex)
+			{
+				Console.WriteLine ("Errors, damn boi");
+				Console.WriteLine (ex.Message);
+			}
+
+			return lists;
+
+		}
 
         public static List<ToDoList> Load()
         {
@@ -127,7 +183,6 @@ namespace BolTDL
             using (FileStream stream = File.Create(file))
             {
                 Byte[] info;
-                int offset = 0;
 
                 info = new UTF8Encoding(true).GetBytes(jsonSettings);
 
@@ -156,6 +211,12 @@ namespace BolTDL
                         }
                     }
                 }
+				else
+				{
+					string username = Environment.UserName;
+					string s = @"{""useColors"":true,""useDescriptions"":true,""username"":""" + username + @"""}";
+					return s;
+				}
             }
             catch (JsonReaderException e)
             {

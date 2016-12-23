@@ -52,6 +52,8 @@ namespace BolTDLConsole
 
 		}
 
+		public string GetUsername => settings.username;
+
         public List<ToDoList> listTabs;
 
         private BolTDLConsoleSettings settings;
@@ -285,9 +287,13 @@ namespace BolTDLConsole
 
         private void Save()
         {
-			foreach (var list in listTabs) {
+			/*	OLD SAVE METHOD WITH SEVERAL FILES
+			 * foreach (var list in listTabs) {
 				DataHandler.Save (list);
-			}
+			} */
+
+			//New Save method, single file
+			DataHandler.ListSave (listTabs);
         }
 
         private void GoList()
@@ -424,15 +430,10 @@ namespace BolTDLConsole
         {
             string json = DataHandler.ImportSettings(BolTDLConsoleSettings.fileName);
 
-            if(json == "")
-            {
-                settings = new BolTDLConsoleSettings();
-                settings.ExportSettings();
-            }
-            else
-            {
-                settings = BolTDLConsoleSettings.SettingsFromJson(DataHandler.ImportSettings(BolTDLConsoleSettings.fileName));
-            }
+            settings = BolTDLConsoleSettings.SettingsFromJson(DataHandler.ImportSettings(BolTDLConsoleSettings.fileName));
+			settings.ExportSettings();
+
+            
         }
     }
 }

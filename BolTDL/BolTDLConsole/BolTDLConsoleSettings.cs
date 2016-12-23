@@ -6,7 +6,8 @@ namespace BolTDLConsole
     class BolTDLConsoleSettings
     {
         public bool useColors { get; set; }
-        public bool useDescriptions { get; set; }
+		public bool useDescriptions { get; set; }
+		public string username { get; set; }
 
         public static readonly string fileName = "BolTDLConsoleSettings.JSON";
 
@@ -20,6 +21,13 @@ namespace BolTDLConsole
             useColors = true;
             useDescriptions = true;
         }
+
+		public BolTDLConsoleSettings(bool colors, bool descriptions, string usn)
+		{
+			useColors = true;
+			useDescriptions = true;
+			username = usn;
+		}
 
         public static BolTDLConsoleSettings SettingsFromJson(string json)
         {

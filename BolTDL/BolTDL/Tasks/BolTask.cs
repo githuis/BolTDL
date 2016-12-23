@@ -9,7 +9,10 @@ namespace BolTDL
 {
     public class BolTask
     {
+		[JsonProperty("title")]
         public string Title { get; private set; }
+
+		[JsonProperty("description")]
         public string Description { get; private set; }
         public TaskPriority Priority { get; private set; }
 
