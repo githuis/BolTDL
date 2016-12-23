@@ -43,6 +43,15 @@ namespace BolTDLConsole
             }
         }
 
+		private bool ListIsPopulated
+		{
+			get
+			{
+				return list.Length > 0;	
+			}
+
+		}
+
         public List<ToDoList> listTabs;
 
         private BolTDLConsoleSettings settings;
@@ -169,7 +178,7 @@ namespace BolTDLConsole
                     PrevoiusTask();
                     GoList();
                 }
-                else if (key == ConsoleKey.L && ListIsPopulated())
+                else if (key == ConsoleKey.L && ListIsPopulated)
                 {
                     OpenTask();
                     Navigate();
@@ -188,12 +197,12 @@ namespace BolTDLConsole
                     Save();
                     GoList();
                 }
-                else if (key == ConsoleKey.D && ListIsPopulated())
+                else if (key == ConsoleKey.D && ListIsPopulated)
                 {
                     state = NavState.PendingDelete;
                     PrintList();
                 }
-                else if (key == ConsoleKey.C && ListIsPopulated())
+                else if (key == ConsoleKey.C && ListIsPopulated)
                 {
                     string name = list.GetTaskAt(_currentTaskIndex).Title;
                     list.DeleteTaskAt(_currentTaskIndex);
@@ -207,7 +216,7 @@ namespace BolTDLConsole
 					RenameTab ();
                     GoList();
                 }
-                else if (key == ConsoleKey.T)
+				else if (key == ConsoleKey.T && state != NavState.PendingDelete)
                 {
 					CurrentTaskIndex = 0;
 					NextTab ();
@@ -250,9 +259,21 @@ namespace BolTDLConsole
 			//Navigation for when pending a delete
 			else if(state == NavState.PendingDelete)
 			{
-				if(key == ConsoleKey.D && ListIsPopulated())
+				if(key == ConsoleKey.D && ListIsPopulated)
 				{
 					DeleteCurrentTask();
+					GoList ();
+				}
+				if(key == ConsoleKey.T)
+				{
+					//Delete list
+					//list.AddTask(new BolTask("Title", ""));
+					//Console.WriteLine ("MEEEEEEEEEEMES");
+
+					DataHandler.TryDeleteSave (list.Name);
+					listTabs.RemoveAt (_currentTab);
+					CurrentTaskIndex = 0;
+					NextTab ();
 					GoList ();
 				}
 				else
@@ -397,11 +418,6 @@ namespace BolTDLConsole
                 }
             }
             Console.WriteLine("");
-        }
-
-        private bool ListIsPopulated()
-        {
-            return list.Length > 0;
         }
 
         public void LoadSettings()

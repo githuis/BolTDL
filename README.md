@@ -21,6 +21,7 @@ Lower case input / don't hold shift, as the application doesn't seem to like tha
 | J   	| Select next task         	|                                                    	|
 | K   	| Select previous task     	|                                                    	|
 | DD  	| Delete selected task     	| Press D twice                                      	|
+| DT 	| Delete current list       | Press D then T                                        |
 | L   	| View task                	|                                                    	|
 | C   	| Change task               | Rewrite a task, same as 'DDO'                     	|
 | H   	| Exit (when viewing task) 	|                                                    	|
