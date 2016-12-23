@@ -35,22 +35,8 @@ namespace BolTDLConsole
             }
         }
 
-        private int _currentTabCount
-        {
-            get
-            {
-                return listTabs.Count;
-            }
-        }
-
-		private bool ListIsPopulated
-		{
-			get
-			{
-				return list.Length > 0;	
-			}
-
-		}
+		private int _currentTabCount => listTabs.Count;
+		private bool ListIsPopulated => list.Length > 0;
 
 		public string GetUsername => settings.username;
 
@@ -59,10 +45,8 @@ namespace BolTDLConsole
         private BolTDLConsoleSettings settings;
         private int _currentTaskIndex, _currentTab;
         private ToDoList _list;
-        //private bool _cursorAtTitle = true;
         private enum NavState { InList, OpenTask, AddingTask, PendingDelete, RenamingTab };
         private NavState state;
-		//private bool runningOnMono;
 
         public CLListNavigator(ToDoList todolist)
         {
@@ -71,13 +55,11 @@ namespace BolTDLConsole
             listTabs = new List<ToDoList>();
             listTabs.Add(todolist);
             _currentTab = 0;
-
-			//runningOnMono = Type.GetType ("Mono.Runtime") != null;
         }
 
         public CLListNavigator(List<ToDoList> todolists)
         {
-            if(todolists.Count > 0)
+			if(todolists.Count > 0)
                 list = todolists[0];
             state = NavState.InList;
             listTabs = todolists;
@@ -137,7 +119,6 @@ namespace BolTDLConsole
                         Console.Write("    ");
                     Console.WriteLine(currentTask.Title);
                 }
-
             }
             else
             {
@@ -146,7 +127,6 @@ namespace BolTDLConsole
             }
 
             Navigate();
-
         }
 
         /// <summary>
@@ -157,14 +137,6 @@ namespace BolTDLConsole
             ConsoleKey key = Console.ReadKey().Key;
             Clear();
             Save();
-
-            ////Remove the typed character
-            //Console.SetCursorPosition(Console.CursorLeft - 1, Console.CursorTop);
-            //Console.Write(" "); 
-
-            ////Start Writing at the top of the console
-            //Console.SetCursorPosition(Console.CursorLeft - 1, Console.CursorTop - list.Length);
-
 
             //Navigation for InList
             if(state == NavState.InList)
@@ -268,10 +240,6 @@ namespace BolTDLConsole
 				}
 				if(key == ConsoleKey.T)
 				{
-					//Delete list
-					//list.AddTask(new BolTask("Title", ""));
-					//Console.WriteLine ("MEEEEEEEEEEMES");
-
 					DataHandler.TryDeleteSave (list.Name);
 					listTabs.RemoveAt (_currentTab);
 					CurrentTaskIndex = 0;
@@ -285,17 +253,8 @@ namespace BolTDLConsole
 			}
         }
 
-        private void Save()
-        {
-			/*	OLD SAVE METHOD WITH SEVERAL FILES
-			 * foreach (var list in listTabs) {
-				DataHandler.Save (list);
-			} */
-
-			//New Save method, single file
-			DataHandler.ListSave (listTabs);
-        }
-
+        private void Save() => DataHandler.ListSave (listTabs);
+        
         private void GoList()
         {
             state = NavState.InList;
@@ -314,7 +273,6 @@ namespace BolTDLConsole
                 Console.WriteLine("Description");
                 Console.WriteLine("    " + currentTask.Description);
             }
-
         }
 
         private void Clear()
@@ -346,13 +304,11 @@ namespace BolTDLConsole
                 return;
             }
 
-            list.AddTask(new BolTask(t, ""));
-            
+            list.AddTask(new BolTask(t, "")); 
         }
 
         private void NavAddTask(string oldTaskName)
         {
-
             state = NavState.AddingTask;
             Clear();
             Console.WriteLine("Enter new title for task: " + oldTaskName);
@@ -432,8 +388,6 @@ namespace BolTDLConsole
 
             settings = BolTDLConsoleSettings.SettingsFromJson(DataHandler.ImportSettings(BolTDLConsoleSettings.fileName));
 			settings.ExportSettings();
-
-            
         }
     }
 }

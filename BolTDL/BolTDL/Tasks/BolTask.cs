@@ -51,8 +51,5 @@ namespace BolTDL
         {
             throw new NotImplementedException("Task.cs/ValidateDescription: Throw in what requirements the description has.");
         }
-
-
-
     }
 }

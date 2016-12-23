@@ -16,42 +16,6 @@ namespace BolTDL
         const string backupFileName = ".boltd.old";
         const string backupErrorFileName = "backup.boltd";
 
-        public static void Save(ToDoList list)
-        {
-            taskListname = list.Name;
-            SetUp(taskListname);
-
-            try
-            {
-				if(File.Exists(Path.Combine(curPath, taskListname + backupFileName)))
-					File.Delete(taskListname + backupFileName);
-				if(File.Exists(Path.Combine(curPath, taskListname + fileExtension)))
-                	File.Move(taskListname + fileExtension, taskListname + backupFileName);
-            }
-            catch (System.IO.FileNotFoundException)
-            {
-				//TODO FIX
-                throw;
-            }
-
-            using (FileStream stream = File.Create(filePath))
-            {
-                Byte[] info;
-                int offset = 0;
-                for (int i = 0; i < list.Length; i++)
-                {
-                    BolTask curTask = list.GetTaskAt(i);
-                    string s = JsonConvert.SerializeObject(list.GetTaskAt(i)) + "\n";
-                    info = new UTF8Encoding(true).GetBytes(s);
-
-                    stream.Write(info, 0, info.Length);
-                    offset += info.Length;
-                }
-            }
-
-
-        }
-
 		public static void ListSave(List<ToDoList> list)
 		{
 			SetUp ("MyList");
@@ -62,7 +26,6 @@ namespace BolTDL
 				info = new UTF8Encoding (true).GetBytes (s);
 
 				stream.Write (info, 0, info.Length);
-
 			}
 		}
 
@@ -91,10 +54,8 @@ namespace BolTDL
 						json += line;
 					}
 				}
-					
 
 				lists = JsonConvert.DeserializeObject<List<ToDoList>>(json);
-
 			} 
 			catch (Exception ex)
 			{
@@ -103,48 +64,7 @@ namespace BolTDL
 			}
 
 			return lists;
-
 		}
-
-        public static List<ToDoList> Load()
-        {
-            LoadSetUp();
-            string[] files = Directory.GetFiles(curPath, "*.boltd");
-
-            List<ToDoList> lists = new List<ToDoList>();
-
-            if (files.Length == 0)
-            {
-                lists.Add(new ToDoList("New Tab"));
-                return lists;
-            }
-
-            try
-            {
-                string line;
-                for (int i = 0; i < files.Length; i++)
-                {
-                    line = "";
-					lists.Add(new ToDoList(Path.GetFileName(files[i]).Replace(".boltd", "")));
-                    using (StreamReader reader = File.OpenText(files[i]))
-                    {
-                        while((line = reader.ReadLine()) != null)
-                        {
-                            lists[i].AddTask(JsonConvert.DeserializeObject<BolTask>(line));
-                        }
-                    }
-                }
-            }
-            catch (JsonReaderException e) //Error parsing JSON from save file
-            {
-                File.Delete(backupErrorFileName);
-                File.Move(fileName, backupErrorFileName);
-                lists[0].AddTask(new BolTask("There was an error loading your save file, open for more info.", "Please check backup.boltd in your BolTDL folder.\n" +
-                    "It should contain the data which was attempted to be loaded. Perhaps you can recover it manually.\n\nThe error message is as follows:\n" + e.Message, TaskPriority.HIGH));
-            }
-
-            return lists;
-        }
 
 		public static bool TryDeleteSave(string listName)
 		{
@@ -182,13 +102,9 @@ namespace BolTDL
 
             using (FileStream stream = File.Create(file))
             {
-                Byte[] info;
-
-                info = new UTF8Encoding(true).GetBytes(jsonSettings);
-
+                Byte[] info = new UTF8Encoding(true).GetBytes(jsonSettings);
                 stream.Write(info, 0, info.Length);
             }
-            
         }
 
         public static string ImportSettings(string settingsName)
@@ -226,7 +142,6 @@ namespace BolTDL
             }
 
             return json;
-
         }
     }
 }
