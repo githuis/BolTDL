@@ -33,13 +33,21 @@ namespace BolTDL
 		{
 			string currentPath = Directory.GetCurrentDirectory ();
 			string[] listFiles = Directory.GetFiles (currentPath, "MyList.boltd");
-			string listFile = listFiles?[0];
 
 			List<ToDoList> lists = new List<ToDoList> ();
 
+            if (listFiles == null || listFiles.Length == 0)
+            {
+                lists.Add(new ToDoList("New tab"));
+                return lists;
+            }
+
+			string listFile = listFiles?[0];
+
+
 			if(listFile == "")
 			{
-				lists.Add (new ToDoList ("Newtab"));
+				lists.Add (new ToDoList ("New tab"));
 				return lists;
 			}
 				
