@@ -39,6 +39,7 @@ namespace BolTDLConsole
 		private bool ListIsPopulated => list.Length > 0;
 
 		public string GetUsername => settings.username;
+        public string GetPassword => settings.password;
 		public string GetWebHost => settings.webAddress;
 
         public List<ToDoList> listTabs;
@@ -46,7 +47,7 @@ namespace BolTDLConsole
         private BolTDLConsoleSettings settings;
         private int _currentTaskIndex, _currentTab;
         private ToDoList _list;
-        private enum NavState { InList, OpenTask, AddingTask, PendingDelete, RenamingTab };
+        private enum NavState { InList, OpenTask, AddingTask, PendingDelete, RenamingTab, DisplayingMessage };
         private NavState state;
 
         public CLListNavigator(ToDoList todolist)
@@ -169,8 +170,19 @@ namespace BolTDLConsole
                 }
                 else if (key == ConsoleKey.W)
                 {
-                    Save();
-                    GoList();
+                    if (GetWebHost != null && GetPassword != null && GetUsername != null)
+                    {
+                        state = NavState.DisplayingMessage;
+                        WebSave();
+                        DisplayMessage("Synced list!");
+                    }
+                    else
+                    {
+                        state = NavState.DisplayingMessage;
+                        DisplayMessage("Failed to sync list, did you configure username, host, password and useWeb? Did you create an account at your host?");
+                    }
+
+                    //GoList();
                 }
                 else if (key == ConsoleKey.D && ListIsPopulated)
                 {
@@ -252,9 +264,15 @@ namespace BolTDLConsole
 					GoList ();
 				}
 			}
+            //Navigation for when displaying a message
+            else if(state == NavState.DisplayingMessage)
+            {
+                GoList();
+            }
         }
 
         private void Save() => DataHandler.ListSave (listTabs);
+        private void WebSave() => DataHandler.ListSaveWeb(GetWebHost, GetUsername, GetPassword, listTabs);
         
         private void GoList()
         {
@@ -381,6 +399,14 @@ namespace BolTDLConsole
                 }
             }
             Console.WriteLine("");
+        }
+
+        private void DisplayMessage(string message)
+        {
+            Clear();
+            Console.WriteLine(message + "\n\nPress any key to continue...");
+            state = NavState.DisplayingMessage;
+            Navigate();
         }
 
 		/// <summary>

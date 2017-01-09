@@ -4,6 +4,7 @@ using System.IO;
 using System.Collections.Generic;
 using System.Text;
 using Newtonsoft.Json;
+using System.Threading.Tasks;
 
 namespace BolTDL
 {
@@ -11,7 +12,6 @@ namespace BolTDL
     {
         static string curPath;
         static string filePath;
-        private static string taskListname;
         const string fileExtension = ".boltd";
         const string fileName = "save.boltd";
         const string backupFileName = ".boltd.old";
@@ -75,20 +75,95 @@ namespace BolTDL
 			return lists;
 		}
 
-		public static  List<ToDoList> ListLoadWeb(string host, string username)
-		{
-		    using(var x = new HttpClient())
-		    {
-		        var values = new Dictionary<string, string>
-		        {
-		            {"username", username}
-		        };
-		        //TODO FORTSÆT
-		        //x.PostAsync($"{host}/getdata",)
-		    }
-		}
+        public static List<ToDoList> ListLoadWeb(string host, string username, string password)
+        {
+            var res = GetSavedDate(host, username, password);
+            string json = res.Result;
 
-		public static bool TryDeleteSave(string listName)
+            if (json == null)
+            {
+                var list = new List<ToDoList>();
+                list.Add(new ToDoList("New list"));
+                return list;
+            }
+            else
+            {
+                return JsonConvert.DeserializeObject<List<ToDoList>>(json);
+            }
+
+        }
+
+        public static async Task<string> GetSavedDate(string host, string username, string password)
+        {
+            host = ReassureHttpIsInHostAddress(host);
+            using (var x = new HttpClient())
+            {
+                var values = new Dictionary<string, string>
+                {
+                    {"username", username},
+                    {"password", password}
+                };
+
+                var content = new FormUrlEncodedContent(values);
+                HttpResponseMessage response = await x.PostAsync(host + "/getdata", content);
+
+                var contents = await response.Content.ReadAsStringAsync();
+
+                return contents;
+            }
+        }
+
+        /// <summary>
+        /// returns false if web sync failed, true otherwise
+        /// </summary>
+        /// <returns></returns>
+        public static bool ListSaveWeb(string host, string username, string password, List<ToDoList> list)
+        {
+            string savedata = JsonConvert.SerializeObject(list, Formatting.Indented);
+            var res = SetSaveData(host, username, password, savedata);
+            string result = res.Result;
+
+            if(result == "Error" || result ==  "Wrong username/password.")
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+        }
+        
+        public static async Task<string> SetSaveData(string host, string username, string password, string savedata)
+        {
+            host = ReassureHttpIsInHostAddress(host);
+            using (var x = new HttpClient())
+            {
+                var values = new Dictionary<string, string>
+                {
+                    {"username", username},
+                    {"password", password},
+                    {"savedata", savedata}
+                };
+
+                var content = new FormUrlEncodedContent(values);
+                HttpResponseMessage response = await x.PostAsync(host + "/setdata", content);
+
+                var contents = await response.Content.ReadAsStringAsync();
+                return contents;
+            }
+            
+        } 
+
+        private static string ReassureHttpIsInHostAddress(string host)
+        {
+            //TODO turn into oneliner
+            if (!host.Contains("http://") && !host.Contains("https://"))
+                return "http://" + host;
+            else
+                return host;
+        }
+
+        public static bool TryDeleteSave(string listName)
 		{
 			LoadSetUp ();
 			string p = Path.Combine (curPath, listName + fileExtension);

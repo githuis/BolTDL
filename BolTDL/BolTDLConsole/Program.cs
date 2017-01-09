@@ -14,8 +14,9 @@ namespace BolTDLConsole
 			CLListNavigator nav = new CLListNavigator(DataHandler.ListLoad());
 			if(nav.LoadSettings())
 			{
-				nav = new CLListNavigator (DataHandler.ListLoadWeb ($"{nav.GetWebHost}"));	
-			}
+                nav = new CLListNavigator(DataHandler.ListLoadWeb(nav.GetWebHost, nav.GetUsername, nav.GetPassword));
+                nav.LoadSettings();
+            }
 			Console.Title = $"BolTDL - Todo list for {nav.GetUsername}";
             nav.PrintList();
         }

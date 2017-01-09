@@ -26,6 +26,7 @@ Lower case input / don't hold shift, as the application doesn't seem to like tha
 | C   	| Change task               | Rewrite a task, same as 'DDO'                     	|
 | H   	| Exit (when viewing task) 	|                                                    	|
 | N   	| Create a new tab      	|                                                    	|
+| W   	| Save list to webserver.     	|  Requires settings set. Run program once and check json file. |
 | T   	| Select next tab       	|                                                    	|
 | R   	| Rename current tab     	|                                                    	|
 | Q   	| Quit                     	| Can also be used in place of H when viewing a task 	|
