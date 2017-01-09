@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net.Http;
 using System.IO;
 using System.Collections.Generic;
 using System.Text;
@@ -66,6 +67,19 @@ namespace BolTDL
 			return lists;
 		}
 
+		public static  List<ToDoList> ListLoadWeb(string host, string username)
+		{
+		    using(var x = new HttpClient())
+		    {
+		        var values = new Dictionary<string, string>
+		        {
+		            {"username", username}
+		        };
+		        //TODO FORTSÆT
+		        //x.PostAsync($"{host}/getdata",)
+		    }
+		}
+
 		public static bool TryDeleteSave(string listName)
 		{
 			LoadSetUp ();
@@ -86,6 +100,7 @@ namespace BolTDL
         private static void LoadSetUp()
         {
             curPath = Directory.GetCurrentDirectory();
+
         }
 
         /// <summary>
