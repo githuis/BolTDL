@@ -39,6 +39,7 @@ namespace BolTDLConsole
 		private bool ListIsPopulated => list.Length > 0;
 
 		public string GetUsername => settings.username;
+		public string GetWebHost => settings.webAddress;
 
         public List<ToDoList> listTabs;
 
@@ -382,12 +383,18 @@ namespace BolTDLConsole
             Console.WriteLine("");
         }
 
-        public void LoadSettings()
+		/// <summary>
+		/// Loads the settings
+		/// </summary>
+		/// <returns><c>true</c>, if settings was contains userWebSync=true, <c>false</c> otherwise.</returns>
+		public bool LoadSettings()
         {
             string json = DataHandler.ImportSettings(BolTDLConsoleSettings.fileName);
 
             settings = BolTDLConsoleSettings.SettingsFromJson(DataHandler.ImportSettings(BolTDLConsoleSettings.fileName));
 			settings.ExportSettings();
+
+			return settings.userWebSync;
         }
     }
 }
