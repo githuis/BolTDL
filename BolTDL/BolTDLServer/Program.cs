@@ -51,7 +51,7 @@ namespace BolTDLServer
                 }
                 else
                 {
-                    File.Create($"{username}-{pass}.txt");
+                    File.WriteAllText($"{username}-{pass}.txt", "[]");
                     res.SendString($"Created user {username} with pass {pass}");
                     Logger.Log("Created user " + username);
                 }

@@ -37,7 +37,7 @@ namespace BolTDL
 
 			List<ToDoList> lists = new List<ToDoList> ();
 
-            if (listFiles == null || listFiles.Length == 0)
+            if (listFiles.Length == 0)
             {
                 lists.Add(new ToDoList("New tab"));
                 return lists;
@@ -80,7 +80,7 @@ namespace BolTDL
             var res = GetSavedDate(host, username, password);
             string json = res.Result;
 
-            if (json == null)
+            if (string.IsNullOrEmpty(json))
             {
                 var list = new List<ToDoList>();
                 list.Add(new ToDoList("New list"));
