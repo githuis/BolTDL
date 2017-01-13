@@ -24,7 +24,7 @@ namespace BolTDLServer
             server.Get("/:route", (req, res) =>
             {
 
-                Logger.Log("User tried to access " + req.Params["route"]);
+                //Logger.Log("User tried to access " + req.Params["route"]);
                 res.SendString("Helo, 404!");
             });
 
@@ -105,7 +105,7 @@ namespace BolTDLServer
             });
 
 
-            server.Start(true);
+            server.Start();
         }
 
         private static bool UserExists(string username)
