@@ -95,22 +95,27 @@ namespace BolTDL
 
         public static async Task<string> GetSavedDate(string host, string username, string password)
         {
-            host = ReassureHttpIsInHostAddress(host);
-            using (var x = new HttpClient())
-            {
-                var values = new Dictionary<string, string>
-                {
-                    {"username", username},
-                    {"password", password}
-                };
+			try {
+				host = ReassureHttpIsInHostAddress(host);
+				using (var x = new HttpClient())
+				{
+					var values = new Dictionary<string, string>
+					{
+						{"username", username},
+						{"password", password}
+					};
 
-                var content = new FormUrlEncodedContent(values);
-                HttpResponseMessage response = await x.PostAsync(host + "/getdata", content);
+					var content = new FormUrlEncodedContent(values);
+					HttpResponseMessage response = await x.PostAsync(host + "/getdata", content);
 
-                var contents = await response.Content.ReadAsStringAsync();
+					var contents = await response.Content.ReadAsStringAsync();
 
-                return contents;
-            }
+					return contents;
+				}
+			} catch (Exception ex) {
+				throw new DownloadException ("Error during download, please check your internet connection.");
+			}
+            
         }
 
         /// <summary>

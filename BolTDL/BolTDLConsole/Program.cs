@@ -14,11 +14,36 @@ namespace BolTDLConsole
 			CLListNavigator nav = new CLListNavigator(DataHandler.ListLoad());
 			if(nav.LoadSettings())
 			{
-                nav = new CLListNavigator(DataHandler.ListLoadWeb(nav.GetWebHost, nav.GetUsername, nav.GetPassword));
-                nav.LoadSettings();
+				try
+				{
+					nav = new CLListNavigator(DataHandler.ListLoadWeb(nav.GetWebHost, nav.GetUsername, nav.GetPassword));
+					nav.LoadSettings();	
+					Console.Title = $"sBolTDL - Todo list for {nav.GetUsername}";
+					nav.PrintList();
+
+				}
+				catch (AggregateException aex)
+				{
+					if(aex.InnerException is DownloadException)
+					{
+						Console.WriteLine ("Error downloading list. Please check your internet connection or disable websync in settings.");
+						Console.WriteLine ("\nPress any key to quit...");
+						Console.ReadKey ();
+					}
+				}
+				catch (Exception ex)
+				{
+					Console.WriteLine ("An error occured. This is the message: " + ex.Message);
+					Console.WriteLine ("\nPress any key to quit...");
+					Console.ReadKey ();
+				}
             }
-			Console.Title = $"BolTDL - Todo list for {nav.GetUsername}";
-            nav.PrintList();
+			else
+			{
+				Console.Title = $"sBolTDL - Todo list for {nav.GetUsername}";
+				nav.PrintList();
+			}
+
         }
     }
 }
