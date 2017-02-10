@@ -50,6 +50,9 @@ namespace BolTDLConsole
         private enum NavState { InList, OpenTask, AddingTask, PendingDelete, RenamingTab, DisplayingMessage };
         private NavState state;
 
+		private string oldTitle;
+		private string noticeString = "Unsaved changes - ";
+
         public CLListNavigator(ToDoList todolist)
         {
             list = todolist;
@@ -174,6 +177,7 @@ namespace BolTDLConsole
                     {
                         state = NavState.DisplayingMessage;
                         WebSave();
+						SavedChanges();
                         DisplayMessage("Synced list!");
                     }
                     else
@@ -308,7 +312,8 @@ namespace BolTDLConsole
 
         private void NavAddTask()
         {
-            state = NavState.AddingTask;
+			state = NavState.AddingTask;
+			UnsavedChanges();
             Clear();
             Console.Write("Enter new title: ");
             string t = Console.ReadLine();
@@ -329,6 +334,7 @@ namespace BolTDLConsole
         private void NavAddTask(string oldTaskName)
         {
             state = NavState.AddingTask;
+			UnsavedChanges();
             Clear();
             Console.WriteLine("Enter new title for task: " + oldTaskName);
             string t = Console.ReadLine();
@@ -349,6 +355,7 @@ namespace BolTDLConsole
 		private void DeleteCurrentTask()
 		{
 			list.DeleteTaskAt (CurrentTaskIndex);
+			UnsavedChanges();
 			CurrentTaskIndex = 0;
 		}
 
@@ -362,6 +369,7 @@ namespace BolTDLConsole
 			if(newName == "")
 				newName = "Unnamed tab";
 			DataHandler.TryDeleteSave (list.Name);
+			UnsavedChanges();
 			list.SetName (newName);
 			Save ();
 		}
@@ -422,5 +430,23 @@ namespace BolTDLConsole
 
 			return settings.userWebSync;
         }
+
+		private void UnsavedChanges()
+		{
+			if (!settings.userWebSync)
+				return;
+			
+			Console.Title = noticeString + oldTitle;
+		}
+
+		private void SavedChanges()
+		{
+			Console.Title = oldTitle;
+		}
+
+		public void SetOldTitle(string old)
+		{
+			oldTitle = old;
+		}
     }
 }

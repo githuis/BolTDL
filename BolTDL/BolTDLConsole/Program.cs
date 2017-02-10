@@ -17,8 +17,10 @@ namespace BolTDLConsole
 				try
 				{
 					nav = new CLListNavigator(DataHandler.ListLoadWeb(nav.GetWebHost, nav.GetUsername, nav.GetPassword));
-					nav.LoadSettings();	
-					Console.Title = $"sBolTDL - Todo list for {nav.GetUsername}";
+					nav.LoadSettings();
+					string title = $"BolTDL - Todo list for {nav.GetUsername}";
+					Console.Title = title;
+					nav.SetOldTitle(title);
 					nav.PrintList();
 
 				}
@@ -40,7 +42,9 @@ namespace BolTDLConsole
             }
 			else
 			{
-				Console.Title = $"sBolTDL - Todo list for {nav.GetUsername}";
+				string title = $"BolTDL - Todo list for {nav.GetUsername}";
+				Console.Title = title;
+				nav.SetOldTitle(title);
 				nav.PrintList();
 			}
 
