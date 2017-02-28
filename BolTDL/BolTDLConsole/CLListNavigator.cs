@@ -188,7 +188,7 @@ namespace BolTDLConsole
 
                     //GoList();
                 }
-                else if (key == ConsoleKey.D && ListIsPopulated)
+                else if (key == ConsoleKey.D)
                 {
                     state = NavState.PendingDelete;
                     PrintList();
