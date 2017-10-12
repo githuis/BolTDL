@@ -2,7 +2,7 @@
 Bolhuis' ToDo Lists: A tiny organization program with vim-like keybinds.
 Tested working on Windows 10 and Archlinux (x64).
 
-#Build
+## Build
 There are two ways to build. The first way is to open the solution with Visual Studio or something alike and build in release mode from there.
 
 The other is with xbuild:
@@ -11,7 +11,7 @@ git clone https://github.com/githuis/BolTDL.git
 cd BolTDL/BolTDL
 xbuild
 ```
-#Instructions
+## Instructions
 
 Lower case input / don't hold shift, as the application doesn't seem to like that.
 
@@ -32,7 +32,7 @@ Lower case input / don't hold shift, as the application doesn't seem to like tha
 | Q   	| Quit                     	| Can also be used in place of H when viewing a task 	|
 
 
-#Authors notes
+## Authors notes
 BolTDL uses the MIT licence, so feel free to use this software for whatever, as long as it complies with it.
 
 Bitcoin, if you like it/manage to sell a version of it, somehow.
