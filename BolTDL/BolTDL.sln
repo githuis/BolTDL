@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BolTDLServer", "BolTDLServe
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BolTDLCore.NetStandard", "BolTDLCore.NetStandard\BolTDLCore.NetStandard.csproj", "{8CCAEF7B-EACB-41A8-B603-438518937C09}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BolTDLServer.NetCore", "BolTDLServer.NetCore\BolTDLServer.NetCore.csproj", "{0BA5CA96-5F52-4C90-B577-5D00F27253DF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{8CCAEF7B-EACB-41A8-B603-438518937C09}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8CCAEF7B-EACB-41A8-B603-438518937C09}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8CCAEF7B-EACB-41A8-B603-438518937C09}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0BA5CA96-5F52-4C90-B577-5D00F27253DF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0BA5CA96-5F52-4C90-B577-5D00F27253DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0BA5CA96-5F52-4C90-B577-5D00F27253DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0BA5CA96-5F52-4C90-B577-5D00F27253DF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
