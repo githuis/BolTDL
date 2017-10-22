@@ -1,13 +1,8 @@
-﻿using System;
-using System.Linq;
-using System.IO;
-using System.Collections.Generic;
-using Microsoft.Extensions.Logging;
+﻿using System.IO;
 using RedHttpServerCore;
 using RedHttpServerCore.Plugins;
 
-
-namespace BolTDLServer
+namespace BolTDLServer.NetCore
 {
     internal class Program
     {
