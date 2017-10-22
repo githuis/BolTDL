@@ -1,12 +1,12 @@
 ﻿using System;
-using System.Net.Http;
-using System.IO;
 using System.Collections.Generic;
+using System.IO;
+using System.Net.Http;
 using System.Text;
-using Newtonsoft.Json;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
-namespace BolTDL
+namespace BolTDLCore.NetStandard
 {
     public class DataHandler
     {

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace BolTDL
+namespace BolTDLCore.NetStandard
 {
 	public class DownloadException : Exception
 	{
