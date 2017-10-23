@@ -9,9 +9,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BolTDLConsole", "BolTDLCons
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BolTDLServer", "BolTDLServer\BolTDLServer.csproj", "{739F7E08-B137-4C90-8981-377CFF1010D1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BolTDLCore.NetStandard", "BolTDLCore.NetStandard\BolTDLCore.NetStandard.csproj", "{8CCAEF7B-EACB-41A8-B603-438518937C09}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BolTDLCore.NetStandard", "BolTDLCore.NetStandard\BolTDLCore.NetStandard.csproj", "{8CCAEF7B-EACB-41A8-B603-438518937C09}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BolTDLServer.NetCore", "BolTDLServer.NetCore\BolTDLServer.NetCore.csproj", "{0BA5CA96-5F52-4C90-B577-5D00F27253DF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BolTDLServer.NetCore", "BolTDLServer.NetCore\BolTDLServer.NetCore.csproj", "{0BA5CA96-5F52-4C90-B577-5D00F27253DF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BolTDLConsole.NetCore", "BolTDLConsole.NetCore\BolTDLConsole.NetCore.csproj", "{BB82A1AF-4440-4C25-A86F-1E3FF963F55C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,6 +41,10 @@ Global
 		{0BA5CA96-5F52-4C90-B577-5D00F27253DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0BA5CA96-5F52-4C90-B577-5D00F27253DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0BA5CA96-5F52-4C90-B577-5D00F27253DF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BB82A1AF-4440-4C25-A86F-1E3FF963F55C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BB82A1AF-4440-4C25-A86F-1E3FF963F55C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BB82A1AF-4440-4C25-A86F-1E3FF963F55C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BB82A1AF-4440-4C25-A86F-1E3FF963F55C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
