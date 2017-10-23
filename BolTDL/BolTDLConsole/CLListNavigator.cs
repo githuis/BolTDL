@@ -101,6 +101,15 @@ namespace BolTDLConsole
             list = listTabs[_currentTab];
         }
 
+        public void PrevTab()
+        {
+            _currentTab--;
+            if (_currentTab < 0)
+                _currentTab = _currentTabCount - 1;
+
+            list = listTabs[_currentTab];
+        }
+
 		public void GotoNewTab()
 		{
 			_currentTab = _currentTabCount - 1;
@@ -213,6 +222,12 @@ namespace BolTDLConsole
 					NextTab ();
 					GoList ();
                 }
+                else if (key == ConsoleKey.P && state != NavState.PendingDelete)
+                {
+                    CurrentTaskIndex = 0;
+                    PrevTab ();
+                    GoList ();
+                }
 				else if (key == ConsoleKey.R)
 				{
 					RenameTab ();
@@ -263,6 +278,14 @@ namespace BolTDLConsole
 					NextTab ();
 					GoList ();
 				}
+                if(key == ConsoleKey.P)
+                {
+                    DataHandler.TryDeleteSave (list.Name);
+                    listTabs.RemoveAt (_currentTab);
+                    CurrentTaskIndex = 0;
+                    PrevTab ();
+                    GoList ();
+                }
 				else
 				{
 					GoList ();
