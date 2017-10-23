@@ -3,45 +3,43 @@ using Newtonsoft.Json;
 
 namespace BolTDLConsole.NetCore
 {
-    class BolTDLConsoleSettings
+    internal class BolTdlConsoleSettings
     {
-        public bool useColors { get; set; }
-		public bool useDescriptions { get; set; }
-		public bool userWebSync { get; set; }
-		public string webAddress { get; set;}
-		public string username { get; set; }
-		public string password { get; set; }
-
-        public static readonly string fileName = "BolTDLConsoleSettings.JSON";
+        public static readonly string FileName = "BolTDLConsoleSettings.JSON";
 
         [JsonConstructor]
-        public BolTDLConsoleSettings()
+        public BolTdlConsoleSettings()
         {
         }
 
-        public BolTDLConsoleSettings(bool colors, bool descriptions)
+        public BolTdlConsoleSettings(bool colors, bool descriptions)
         {
-            useColors = true;
-            useDescriptions = true;
+            UseColors = colors;
+            UseDescriptions = descriptions;
         }
 
-		public BolTDLConsoleSettings(bool colors, bool descriptions, string usn, string password)
-		{
-			useColors = true;
-			useDescriptions = true;
-			username = usn;
-			this.password = password;
-		}
-
-		public static BolTDLConsoleSettings SettingsFromJson(string json)
+        public BolTdlConsoleSettings(bool colors, bool descriptions, string usn, string password) : this(colors, descriptions)
         {
-            return JsonConvert.DeserializeObject<BolTDLConsoleSettings>(json);
+            Username = usn;
+            Password = password;
+        }
+
+        public bool UseColors { get; set; }
+        public bool UseDescriptions { get; set; }
+        public bool UserWebSync { get; set; }
+        public string WebAddress { get; set; }
+        public string Username { get; set; }
+        public string Password { get; set; }
+
+        public static BolTdlConsoleSettings SettingsFromJson(string json)
+        {
+            return JsonConvert.DeserializeObject<BolTdlConsoleSettings>(json);
         }
 
         public void ExportSettings()
         {
-            string settings = JsonConvert.SerializeObject(this);
-            DataHandler.ExportSettings(fileName, settings);
+            var settings = JsonConvert.SerializeObject(this);
+            DataHandler.ExportSettings(FileName, settings);
         }
     }
 }

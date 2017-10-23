@@ -5,69 +5,44 @@ using BolTDLCore.NetStandard.Tasks;
 
 namespace BolTDLConsole.NetCore
 {
-    class CLListNavigator : IListNavigator
+    internal class ClListNavigator : IListNavigator
     {
-        public int CurrentTaskIndex
-        {
-            get
-            {
-                return _currentTaskIndex;
-            }
+        private int _currentTab;
+        private const string _noticeString = "Unsaved changes - ";
 
-            set
-            {
-                _currentTaskIndex = value;
-            }
-        }
+        private string _oldTitle;
 
-        public ToDoList list
-        {
-            get
-            {
-                return _list;
-            }
+        private BolTdlConsoleSettings _settings;
+        private NavState _state;
 
-            set
-            {
-                _list = value;
-            }
-        }
+        public List<ToDoList> ListTabs;
 
-		private int _currentTabCount => listTabs.Count;
-		private bool ListIsPopulated => list.Length > 0;
-
-		public string GetUsername => settings.username;
-        public string GetPassword => settings.password;
-		public string GetWebHost => settings.webAddress;
-
-        public List<ToDoList> listTabs;
-
-        private BolTDLConsoleSettings settings;
-        private int _currentTaskIndex, _currentTab;
-        private ToDoList _list;
-        private enum NavState { InList, OpenTask, AddingTask, PendingDelete, RenamingTab, DisplayingMessage };
-        private NavState state;
-
-		private string oldTitle;
-		private string noticeString = "Unsaved changes - ";
-
-        public CLListNavigator(ToDoList todolist)
+        public ClListNavigator(ToDoList todolist)
         {
             list = todolist;
-            state = NavState.InList;
-            listTabs = new List<ToDoList>();
-            listTabs.Add(todolist);
+            _state = NavState.InList;
+            ListTabs = new List<ToDoList> {todolist};
             _currentTab = 0;
         }
 
-        public CLListNavigator(List<ToDoList> todolists)
+        public ClListNavigator(List<ToDoList> todolists)
         {
-			if(todolists.Count > 0)
+            if (todolists.Count > 0)
                 list = todolists[0];
-            state = NavState.InList;
-            listTabs = todolists;
+            _state = NavState.InList;
+            ListTabs = todolists;
             _currentTab = 0;
         }
+
+        private int CurrentTabCount => ListTabs.Count;
+        private bool ListIsPopulated => list.Length > 0;
+
+        public string GetUsername => _settings.Username;
+        public string GetPassword => _settings.Password;
+        public string GetWebHost => _settings.WebAddress;
+        public int CurrentTaskIndex { get; set; }
+
+        public ToDoList list { get; set; }
 
         public void FindTask()
         {
@@ -76,46 +51,41 @@ namespace BolTDLConsole.NetCore
 
         public void NextTask()
         {
-            if ((CurrentTaskIndex + 1) < list.Length)
-            {
+            if (CurrentTaskIndex + 1 < list.Length)
                 CurrentTaskIndex++;
-            }
         }
 
         public void PrevoiusTask()
         {
             if (CurrentTaskIndex > 0)
-            {
                 CurrentTaskIndex--;
-            }
         }
 
         public void NextTab()
         {
             _currentTab++;
-            if (_currentTab >= _currentTabCount)
+            if (_currentTab >= CurrentTabCount)
                 _currentTab = 0;
 
-            list = listTabs[_currentTab];
+            list = ListTabs[_currentTab];
         }
 
-		public void GotoNewTab()
-		{
-			_currentTab = _currentTabCount - 1;
-			list = listTabs [_currentTab];
-		}
+        public void GotoNewTab()
+        {
+            _currentTab = CurrentTabCount - 1;
+            list = ListTabs[_currentTab];
+        }
 
         public void PrintList()
         {
             Clear();
 
-            if(list.Length > 0)
+            if (list.Length > 0)
             {
                 WriteTabs();
-                BolTask currentTask;
-                for (int i = 0; i < list.Length; i++)
+                for (var i = 0; i < list.Length; i++)
                 {
-                    currentTask = list.GetTaskAt(i);
+                    var currentTask = list.GetTaskAt(i);
                     if (i == CurrentTaskIndex)
                         Console.Write(">   ");
                     else
@@ -133,99 +103,89 @@ namespace BolTDLConsole.NetCore
         }
 
         /// <summary>
-        /// Handles the navigation, pretty much the primary class. Needs to be split into smaller methods.
+        ///     Handles the navigation, pretty much the primary class. Needs to be split into smaller methods.
         /// </summary>
         private void Navigate()
         {
-            ConsoleKey key = Console.ReadKey().Key;
+            var key = Console.ReadKey().Key;
             Clear();
             Save();
 
             //Navigation for InList
-            if(state == NavState.InList)
+            if (_state == NavState.InList)
             {
-                if (key == ConsoleKey.J)
+                switch (key)
                 {
-                    NextTask();
-                    GoList();
-                }
-                else if (key == ConsoleKey.K)
-                {
-                    state = NavState.InList;
-                    PrevoiusTask();
-                    GoList();
-                }
-                else if (key == ConsoleKey.L && ListIsPopulated)
-                {
-                    OpenTask();
-                    Navigate();
-                }
-                else if (key == ConsoleKey.O)
-                {
-                    NavAddTask();
-                    GoList();
-                }
-                else if (key == ConsoleKey.Q)
-                {
-                    return;
-                }
-                else if (key == ConsoleKey.W)
-                {
-                    if (GetWebHost != null && GetPassword != null && GetUsername != null)
-                    {
-                        state = NavState.DisplayingMessage;
-                        WebSave();
-						SavedChanges();
-                        DisplayMessage("Synced list!");
-                    }
-                    else
-                    {
-                        state = NavState.DisplayingMessage;
-                        DisplayMessage("Failed to sync list, did you configure username, host, password and useWeb? Did you create an account at your host?");
-                    }
-
-                    //GoList();
-                }
-                else if (key == ConsoleKey.D)
-                {
-                    state = NavState.PendingDelete;
-                    PrintList();
-                }
-                else if (key == ConsoleKey.C && ListIsPopulated)
-                {
-                    string name = list.GetTaskAt(_currentTaskIndex).Title;
-                    list.DeleteTaskAt(_currentTaskIndex);
-                    NavAddTask(name);
-                    GoList();
-                }
-                else if (key == ConsoleKey.N)
-                {
-                    listTabs.Add(new ToDoList("New unnamed tab"));
-					GotoNewTab ();
-					RenameTab ();
-                    GoList();
-                }
-				else if (key == ConsoleKey.T && state != NavState.PendingDelete)
-                {
-					CurrentTaskIndex = 0;
-					NextTab ();
-					GoList ();
-                }
-				else if (key == ConsoleKey.R)
-				{
-					RenameTab ();
-					GoList ();
-				}
-                else
-                {
-                    state = NavState.InList;
-                    PrintList();
+                    case ConsoleKey.J:
+                        NextTask();
+                        GoList();
+                        break;
+                    case ConsoleKey.K:
+                        _state = NavState.InList;
+                        PrevoiusTask();
+                        GoList();
+                        break;
+                    case ConsoleKey.L when ListIsPopulated:
+                        OpenTask();
+                        Navigate();
+                        break;
+                    case ConsoleKey.O:
+                        NavAddTask();
+                        GoList();
+                        break;
+                    case ConsoleKey.Q:
+                        return;
+                    case ConsoleKey.W:
+                        if (GetWebHost != null && GetPassword != null && GetUsername != null)
+                        {
+                            _state = NavState.DisplayingMessage;
+                            WebSave();
+                            SavedChanges();
+                            DisplayMessage("Synced list!");
+                        }
+                        else
+                        {
+                            _state = NavState.DisplayingMessage;
+                            DisplayMessage(
+                                "Failed to sync list, did you configure username, host, password and useWeb? Did you create an account at your host?");
+                        }
+                        //GoList();
+                        break;
+                    case ConsoleKey.D:
+                        _state = NavState.PendingDelete;
+                        PrintList();
+                        break;
+                    case ConsoleKey.C when ListIsPopulated:
+                        var name = list.GetTaskAt(CurrentTaskIndex).Title;
+                        list.DeleteTaskAt(CurrentTaskIndex);
+                        NavAddTask(name);
+                        GoList();
+                        break;
+                    case ConsoleKey.N:
+                        ListTabs.Add(new ToDoList("New unnamed tab"));
+                        GotoNewTab();
+                        RenameTab();
+                        GoList();
+                        break;
+                    case ConsoleKey.T when _state != NavState.PendingDelete:
+                        CurrentTaskIndex = 0;
+                        NextTab();
+                        GoList();
+                        break;
+                    case ConsoleKey.R:
+                        RenameTab();
+                        GoList();
+                        break;
+                    default:
+                        _state = NavState.InList;
+                        PrintList();
+                        break;
                 }
             }
             //Navigation for when a task is open
-            else if(state == NavState.OpenTask)
+            else if (_state == NavState.OpenTask)
             {
-                if(key == ConsoleKey.Q ||key == ConsoleKey.H)
+                if (key == ConsoleKey.Q || key == ConsoleKey.H)
                 {
                     GoList();
                 }
@@ -234,62 +194,69 @@ namespace BolTDLConsole.NetCore
                     //Edit
                     Navigate();
                 }
-				else if (key == ConsoleKey.J || key == ConsoleKey.K)
-				{
-					//Do nothing
-					OpenTask();
-					Navigate ();
-				}
+                else if (key == ConsoleKey.J || key == ConsoleKey.K)
+                {
+                    //Do nothing
+                    OpenTask();
+                    Navigate();
+                }
                 else
                 {
                     GoList();
                 }
             }
-			//Navigation for when pending a delete
-			else if(state == NavState.PendingDelete)
-			{
-				if(key == ConsoleKey.D && ListIsPopulated)
-				{
-					DeleteCurrentTask();
-					GoList ();
-				}
-				if(key == ConsoleKey.T)
-				{
-					DataHandler.TryDeleteSave (list.Name);
-					listTabs.RemoveAt (_currentTab);
-					CurrentTaskIndex = 0;
-					NextTab ();
-					GoList ();
-				}
-				else
-				{
-					GoList ();
-				}
-			}
+            //Navigation for when pending a delete
+            else if (_state == NavState.PendingDelete)
+            {
+                if (key == ConsoleKey.D && ListIsPopulated)
+                {
+                    DeleteCurrentTask();
+                    GoList();
+                }
+                if (key == ConsoleKey.T)
+                {
+                    DataHandler.TryDeleteSave(list.Name);
+                    ListTabs.RemoveAt(_currentTab);
+                    CurrentTaskIndex = 0;
+                    NextTab();
+                    GoList();
+                }
+                else
+                {
+                    GoList();
+                }
+            }
             //Navigation for when displaying a message
-            else if(state == NavState.DisplayingMessage)
+            else if (_state == NavState.DisplayingMessage)
             {
                 GoList();
             }
         }
 
-        private void Save() => DataHandler.ListSave (listTabs);
-        private void WebSave() => DataHandler.ListSaveWeb(GetWebHost, GetUsername, GetPassword, listTabs);
-        
+        private void Save()
+        {
+            DataHandler.ListSave(ListTabs);
+        }
+
+        private void WebSave()
+        {
+            DataHandler.ListSaveWeb(GetWebHost, GetUsername, GetPassword, ListTabs);
+        }
+
         private void GoList()
         {
-            state = NavState.InList;
+            _state = NavState.InList;
             PrintList();
         }
 
         private void OpenTask()
         {
-			state = NavState.OpenTask;
-            BolTask currentTask = list.GetTaskAt(CurrentTaskIndex);
+            _state = NavState.OpenTask;
+            var currentTask = list.GetTaskAt(CurrentTaskIndex);
             Console.WriteLine("Title");
             Console.WriteLine("    " + currentTask.Title);
 
-            if(settings.useDescriptions)
+            if (_settings.UseDescriptions)
             {
                 Console.WriteLine("Description");
                 Console.WriteLine("    " + currentTask.Description);
@@ -298,48 +265,25 @@ namespace BolTDLConsole.NetCore
 
         private void Clear()
         {
-			//Windows
-			Console.SetCursorPosition(0, 0);
+            //Windows
+            Console.SetCursorPosition(0, 0);
 
-			for (int i = 0; i < Console.WindowHeight; i++)
-			{
-				Console.Write(new string(' ', Console.WindowWidth - Console.CursorLeft));
-			}
-			Console.SetCursorPosition(0, 0);
+            for (var i = 0; i < Console.WindowHeight; i++)
+                Console.Write(new string(' ', Console.WindowWidth - Console.CursorLeft));
+            Console.SetCursorPosition(0, 0);
         }
 
         private void NavAddTask()
         {
-			state = NavState.AddingTask;
-			UnsavedChanges();
+            _state = NavState.AddingTask;
+            UnsavedChanges();
             Clear();
             Console.Write("Enter new title: ");
-            string t = Console.ReadLine();
-            if (settings.useDescriptions)
+            var t = Console.ReadLine();
+            if (_settings.UseDescriptions)
             {
                 Console.Write("Enter description (optional): ");
-                string d = Console.ReadLine();
-                if (t == "")
-                    return;
-                list.AddTask(new BolTask(t, d));
-
-                return;
-            }
-
-            list.AddTask(new BolTask(t, "")); 
-        }
-
-        private void NavAddTask(string oldTaskName)
-        {
-            state = NavState.AddingTask;
-			UnsavedChanges();
-            Clear();
-            Console.WriteLine("Enter new title for task: " + oldTaskName);
-            string t = Console.ReadLine();
-            if (settings.useDescriptions)
-            {
-                Console.Write("Enter description (optional): ");
-                string d = Console.ReadLine();
+                var d = Console.ReadLine();
                 if (t == "")
                     return;
                 list.AddTask(new BolTask(t, d));
@@ -350,38 +294,58 @@ namespace BolTDLConsole.NetCore
             list.AddTask(new BolTask(t, ""));
         }
 
-		private void DeleteCurrentTask()
-		{
-			list.DeleteTaskAt (CurrentTaskIndex);
-			UnsavedChanges();
-			CurrentTaskIndex = 0;
-		}
+        private void NavAddTask(string oldTaskName)
+        {
+            _state = NavState.AddingTask;
+            UnsavedChanges();
+            Clear();
+            Console.WriteLine("Enter new title for task: " + oldTaskName);
+            var t = Console.ReadLine();
+            if (_settings.UseDescriptions)
+            {
+                Console.Write("Enter description (optional): ");
+                var d = Console.ReadLine();
+                if (t == "")
+                    return;
+                list.AddTask(new BolTask(t, d));
 
-		private void RenameTab()
-		{
-			state = NavState.RenamingTab;
-			Clear ();
+                return;
+            }
 
-			Console.WriteLine ("Enter new name for tab " + list.Name);
-			string newName = Console.ReadLine();
-			if(newName == "")
-				newName = "Unnamed tab";
-			DataHandler.TryDeleteSave (list.Name);
-			UnsavedChanges();
-			list.SetName (newName);
-			Save ();
-		}
+            list.AddTask(new BolTask(t, ""));
+        }
+
+        private void DeleteCurrentTask()
+        {
+            list.DeleteTaskAt(CurrentTaskIndex);
+            UnsavedChanges();
+            CurrentTaskIndex = 0;
+        }
+
+        private void RenameTab()
+        {
+            _state = NavState.RenamingTab;
+            Clear();
+
+            Console.WriteLine("Enter new name for tab " + list.Name);
+            var newName = Console.ReadLine();
+            if (newName == "")
+                newName = "Unnamed tab";
+            DataHandler.TryDeleteSave(list.Name);
+            UnsavedChanges();
+            list.SetName(newName);
+            Save();
+        }
 
         private void WriteTabs()
         {
-            ConsoleColor oldForeground = Console.ForegroundColor;
-            ConsoleColor oldBackground = Console.BackgroundColor;
+            var oldForeground = Console.ForegroundColor;
+            var oldBackground = Console.BackgroundColor;
 
-            for (int i = 0; i < _currentTabCount; i++)
-            {
-                if(i == _currentTab)
+            for (var i = 0; i < CurrentTabCount; i++)
+                if (i == _currentTab)
                 {
-                    if(settings.useColors)
+                    if (_settings.UseColors)
                     {
                         Console.ForegroundColor = ConsoleColor.Black;
                         Console.BackgroundColor = ConsoleColor.White;
@@ -391,9 +355,9 @@ namespace BolTDLConsole.NetCore
                         Console.Write("> ");
                     }
 
-                    Console.Write(listTabs[i].Name + "   ");
+                    Console.Write(ListTabs[i].Name + "   ");
 
-                    if(settings.useColors)
+                    if (_settings.UseColors)
                     {
                         Console.ForegroundColor = oldForeground;
                         Console.BackgroundColor = oldBackground;
@@ -401,9 +365,8 @@ namespace BolTDLConsole.NetCore
                 }
                 else
                 {
-                    Console.Write(listTabs[i].Name + "   ");
+                    Console.Write(ListTabs[i].Name + "   ");
                 }
-            }
             Console.WriteLine("");
         }
 
@@ -411,40 +374,49 @@ namespace BolTDLConsole.NetCore
         {
             Clear();
             Console.WriteLine(message + "\n\nPress any key to continue...");
-            state = NavState.DisplayingMessage;
+            _state = NavState.DisplayingMessage;
             Navigate();
         }
 
-		/// <summary>
-		/// Loads the settings
-		/// </summary>
-		/// <returns><c>true</c>, if settings was contains userWebSync=true, <c>false</c> otherwise.</returns>
-		public bool LoadSettings()
+        /// <summary>
+        ///     Loads the settings
+        /// </summary>
+        /// <returns><c>true</c>, if settings was contains userWebSync=true, <c>false</c> otherwise.</returns>
+        public bool LoadSettings()
         {
-            string json = DataHandler.ImportSettings(BolTDLConsoleSettings.fileName);
+            _settings = BolTdlConsoleSettings.SettingsFromJson(
+                DataHandler.ImportSettings(BolTdlConsoleSettings.FileName));
+            _settings.ExportSettings();
 
-            settings = BolTDLConsoleSettings.SettingsFromJson(DataHandler.ImportSettings(BolTDLConsoleSettings.fileName));
-			settings.ExportSettings();
-
-			return settings.userWebSync;
+            return _settings.UserWebSync;
         }
 
-		private void UnsavedChanges()
-		{
-			if (!settings.userWebSync)
-				return;
-			
-			Console.Title = noticeString + oldTitle;
-		}
+        private void UnsavedChanges()
+        {
+            if (!_settings.UserWebSync)
+                return;
 
-		private void SavedChanges()
-		{
-			Console.Title = oldTitle;
-		}
+            Console.Title = _noticeString + _oldTitle;
+        }
 
-		public void SetOldTitle(string old)
-		{
-			oldTitle = old;
-		}
+        private void SavedChanges()
+        {
+            Console.Title = _oldTitle;
+        }
+
+        public void SetOldTitle(string old)
+        {
+            _oldTitle = old;
+        }
+
+        private enum NavState
+        {
+            InList,
+            OpenTask,
+            AddingTask,
+            PendingDelete,
+            RenamingTab,
+            DisplayingMessage
+        }
     }
 }
