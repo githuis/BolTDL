@@ -8,21 +8,9 @@ namespace BolTDLCore.NetStandard
     {
 		[JsonProperty("listtitle")]
         public string Name { get; private set; }
-        public int Length
-        {
-            get
-            {
-                return Tasks.Count;
-            }
-        }
+        public int Length => Tasks.Count;
 
-		public List<BolTask> GetAllTasks
-		{
-			get
-			{
-				return Tasks;	
-			}
-		}
+        public List<BolTask> GetAllTasks => Tasks;
 
         private List<BolTask> Tasks;
 
