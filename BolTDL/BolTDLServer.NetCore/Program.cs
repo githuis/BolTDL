@@ -1,121 +1,146 @@
-﻿using System.IO;
-using RedHttpServerCore;
-using RedHttpServerCore.Plugins;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Net;
+using System.Threading.Tasks;
+using Red;
+using Red.CookieSessions;
+using Red.Extensions;
 
 namespace BolTDLServer.NetCore
 {
+    class Session
+    {
+        public string Username { get; set; }
+    }
+    
     internal class Program
     {
         public static void Main(string[] args)
         {
             var server = new RedHttpServer(3000, "www");
-            var logger = new TerminalLogging();
+            var db = new LiteDatabase();
 
-            server.Get("/", async (req, res) =>
+            async Task Auth(Request req, Response res)
             {
-                await res.SendString("Hello, World!");
-            });
-
-            server.Get("/:route", async (req, res) =>
-            {
-                //Logger.Log("User tried to access " + req.Params["route"]);
-                await res.SendString("Helo, 404!");
-            });
-
-            server.Post("/getuser", async (req, res) =>
-            {
-                var post = await req.GetFormDataAsync();
-                string username = post["username"][0];
-                string pass = post["pass"][0];
-
-                await res.SendFile($"www/{username}.txt");
-
-            });
-
-            server.Post("/createuser", async (req, res) =>
-            {
-
-                var post = await req.GetFormDataAsync();
-                string username = post["username"][0];
-                string pass = post["password"][0];
-
-                if (Directory.GetFiles("./", $"{username}-*").Length > 0)
+                var session = req.GetSession<Session>();
+                if (session == null)
                 {
-                    await res.SendString("User already exists, sorry!.");
+                    await res.SendStatus(HttpStatusCode.Unauthorized);
                 }
-                else
-                {
-                    File.WriteAllText($"{username}-{pass}.txt", "[]");
-                    await res.SendString($"Created user {username} with pass {pass}");
-                    logger.Log("Created user " + username);
-                }
-            });
+            }
 
-            server.Post("/getdata", async (req, res) =>
+            server.Post("/login", async (req, res) =>
             {
-                var post = await req.GetFormDataAsync();
-                string username = post["username"];
-                string pass = post["password"];
+                var form = await req.GetFormDataAsync();
 
-                //Logger.Log($"User {username} accesing get data using pass {pass}");
-                if (UserExists(username) && CorrectLoginInfo(username, pass))
-                {
-                    await res.SendFile($"./{username}-{pass}.txt", "text/plain");
-                }
-                else
-                {
-                    await res.SendString($"Wrong username/password.");
-                }
-            });
+                string username = form["username"];
+                string password = form["password"];
 
-            server.Post("/setdata", async (req, res) =>
-            {
-                var post = await req.GetFormDataAsync();
-                string username = post["username"];
-                string pass = post["password"];
-                string savedata = post["savedata"];
-                logger.Log($"User {username} updated list!");
-
-                if (UserExists(username) && CorrectLoginInfo(username, pass))
+                var user = db.FindUser(u => u.Username == username);
+                if (user == null || !BCrypt.Net.BCrypt.Verify(password, user.Password))
                 {
-                    using (FileStream steam = File.Create(LocalAddressForUser(username, pass)))
-                    {
-                        byte[] info;
-                        info = new System.Text.UTF8Encoding(true).GetBytes(savedata);
-                        steam.Write(info, 0, info.Length);
-                    }
-                    await res.SendString("Sucess");
-                }
-                else
-                {
-                    await res.SendString("Error");
+                    await res.SendStatus(HttpStatusCode.Unauthorized);
+                    return;
                 }
                 
+                req.OpenSession(new Session{Username = username});
+                await res.SendStatus(HttpStatusCode.OK);
             });
-
-            server.Get("/register", async (req, res) =>
+            server.Post("/logout", Auth, async (req, res) =>
             {
-                await res.RenderPage("www/index.ecs", null);
+                req.GetSession<Session>().Close(req);
+                await res.SendStatus(HttpStatusCode.OK);
+            });
+            
+            
+            server.Post("/category", Auth, async (req, res) =>
+            {
+                var sessionData = req.GetSession<Session>().Data;
+                var category = await req.ParseBodyAsync<Category>();
+                if (category == null)
+                {
+                    await res.SendStatus(HttpStatusCode.BadRequest);
+                    return;
+                }
+                category.Owner = sessionData.Username;
+                category.Items = new List<Item>();
+                if (db.InsertCategory(category))
+                {
+                    await res.SendStatus(HttpStatusCode.OK);
+                }
+                else
+                {
+                    await res.SendStatus(HttpStatusCode.InternalServerError);
+                }
             });
 
+
+            server.Post("/category/:categoryId", Auth, async (req, res) =>
+            {
+                var sessionData = req.GetSession<Session>().Data;
+                var category = db.FindCategories(c => c.Id == req.Parameters["categoryId"]).FirstOrDefault();
+                if (category == null || category.Owner != sessionData.Username)
+                {
+                    await res.SendStatus(HttpStatusCode.NotFound);
+                    return;
+                }
+                var item = await req.ParseBodyAsync<Item>();
+                if (item == null)
+                {
+                    await res.SendStatus(HttpStatusCode.BadRequest);
+                    return;
+                }
+                
+                category.Items.Add(item);
+                if (db.UpdateCategory(category))
+                {
+                    await res.SendStatus(HttpStatusCode.OK);
+                }
+                else
+                {
+                    await res.SendStatus(HttpStatusCode.InternalServerError);
+                }
+            });
+
+            server.Get("/categories", Auth, async (req, res) =>
+            {
+                var sessionData = req.GetSession<Session>().Data;
+                var categories = db.FindCategories(c => c.Owner == sessionData.Username);
+                await res.SendJson(categories);
+
+            });
+
+            server.Post("/user", async (req, res) =>
+            {
+                var form = await req.GetFormDataAsync();
+                string username = form["username"];
+                string password = form["password"];
+
+                if (db.FindUser(u => u.Username == username) != null)
+                {
+                    await res.SendStatus(HttpStatusCode.BadRequest);
+                    return;
+                }
+
+                var user = new User
+                {
+                    Username = username,
+                    Password = BCrypt.Net.BCrypt.HashPassword(password)
+                };
+                
+                if (db.InsertUser(user))
+                {
+                    await res.SendStatus(HttpStatusCode.OK);
+                }
+                else
+                {
+                    await res.SendStatus(HttpStatusCode.BadRequest);
+                }
+            });
 
             server.Start();
-        }
-
-        private static bool UserExists(string username)
-        {
-            return Directory.GetFiles("./", $"{username}-*").Length > 0;
-        }
-
-
-        private static bool CorrectLoginInfo(string username, string password)
-        {
-            return File.Exists($"./{username}-{password}.txt");
-        }
-
-        private static string LocalAddressForUser(string username, string password)
-        {
-            return $"./{username}-{password}.txt";
         }
     }
 }
