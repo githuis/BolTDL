@@ -7,63 +7,25 @@ namespace BolTDLServer.NetCore
 {
     public class LiteDatabase : IDatabase
     {
-        private readonly LiteCollection<Category> _categoryTable;
-        private readonly LiteCollection<User> _userTable;
+        private readonly LiteDB.LiteDatabase _db;
 
         public LiteDatabase(string connectionString = "db.lite.db")
         {
             BsonMapper.Global.Entity<Item>()
                 .Id(x => x.Id);
 
-            BsonMapper.Global.Entity<Category>()
+            BsonMapper.Global.Entity<User>()
                 .Id(x => x.Id);
 
-            BsonMapper.Global.Entity<User>()
-                .Id(x => x.Username);
-
-            _categoryTable = new LiteDB.LiteDatabase(connectionString).GetCollection<Category>();
-            _userTable = new LiteDB.LiteDatabase(connectionString).GetCollection<User>();
+           _db = new LiteDB.LiteDatabase(connectionString);
         }
 
-        public bool InsertUser(User user)
-        {
-            return _userTable.Insert(user);
-        }
+        public bool Insert<T>(T model) where T : IModel => _db.GetCollection<T>().Insert(model);
+        public bool Update<T>(T model) where T : IModel => _db.GetCollection<T>().Update(model);
+        public bool Delete<T>(T model) where T : IModel => _db.GetCollection<T>().Delete(model.Id);
+        public IEnumerable<T> Get<T>() where T : IModel => _db.GetCollection<T>().FindAll();
+        public IEnumerable<T> Find<T>(Expression<Func<T, bool>> predicate) where T : IModel => _db.GetCollection<T>().Find(predicate);
+        public T FindOne<T>(Expression<Func<T, bool>> predicate) where T : IModel => _db.GetCollection<T>().FindOne(predicate);
 
-        public bool UpdateUser(User user)
-        {
-            return _userTable.Update(user);
-        }
-
-        public bool DeleteUser(string username)
-        {
-            return _userTable.Delete(Query.EQ(nameof(User.Username), username)) == 1;
-        }
-
-        public User FindUser(Expression<Func<User, bool>> predicate)
-        {
-            return _userTable.FindOne(predicate);
-        }
-
-        
-        public bool InsertCategory(Category category)
-        {
-            return _categoryTable.Insert(category);
-        }
-
-        public bool UpdateCategory(Category category)
-        {
-            return _categoryTable.Update(category);
-        }
-
-        public bool DeleteCategory(string categoryId)
-        {
-            return _categoryTable.Delete(Query.EQ(nameof(Category.Id), categoryId)) == 1;
-        }
-
-        public IEnumerable<Category> FindCategories(Expression<Func<Category, bool>> predicate)
-        {
-            return _categoryTable.Find(predicate);
-        }
     }
 }

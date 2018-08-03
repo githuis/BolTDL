@@ -12,24 +12,16 @@ namespace BolTDLServer.NetCore
 {
     class Session
     {
-        public string Username { get; set; }
+        public Guid Id { get; set; }
     }
     
     internal class Program
     {
         public static void Main(string[] args)
         {
-            var server = new RedHttpServer(3000, "www");
+            var server = new RedHttpServer(3000, "D:\\Projects\\BolTDL-Webapp\\dist");
             var db = new LiteDatabase();
 
-            async Task Auth(Request req, Response res)
-            {
-                var session = req.GetSession<Session>();
-                if (session == null)
-                {
-                    await res.SendStatus(HttpStatusCode.Unauthorized);
-                }
-            }
 
             server.Post("/login", async (req, res) =>
             {
@@ -38,14 +30,14 @@ namespace BolTDLServer.NetCore
                 string username = form["username"];
                 string password = form["password"];
 
-                var user = db.FindUser(u => u.Username == username);
+                var user = db.FindOne<User>(u => u.Username == username);
                 if (user == null || !BCrypt.Net.BCrypt.Verify(password, user.Password))
                 {
                     await res.SendStatus(HttpStatusCode.Unauthorized);
                     return;
                 }
                 
-                req.OpenSession(new Session{Username = username});
+                req.OpenSession(new Session{Id = user.Id});
                 await res.SendStatus(HttpStatusCode.OK);
             });
             server.Post("/logout", Auth, async (req, res) =>
@@ -55,70 +47,14 @@ namespace BolTDLServer.NetCore
             });
             
             
-            server.Post("/category", Auth, async (req, res) =>
-            {
-                var sessionData = req.GetSession<Session>().Data;
-                var category = await req.ParseBodyAsync<Category>();
-                if (category == null)
-                {
-                    await res.SendStatus(HttpStatusCode.BadRequest);
-                    return;
-                }
-                category.Owner = sessionData.Username;
-                category.Items = new List<Item>();
-                if (db.InsertCategory(category))
-                {
-                    await res.SendStatus(HttpStatusCode.OK);
-                }
-                else
-                {
-                    await res.SendStatus(HttpStatusCode.InternalServerError);
-                }
-            });
-
-
-            server.Post("/category/:categoryId", Auth, async (req, res) =>
-            {
-                var sessionData = req.GetSession<Session>().Data;
-                var category = db.FindCategories(c => c.Id == req.Parameters["categoryId"]).FirstOrDefault();
-                if (category == null || category.Owner != sessionData.Username)
-                {
-                    await res.SendStatus(HttpStatusCode.NotFound);
-                    return;
-                }
-                var item = await req.ParseBodyAsync<Item>();
-                if (item == null)
-                {
-                    await res.SendStatus(HttpStatusCode.BadRequest);
-                    return;
-                }
-                
-                category.Items.Add(item);
-                if (db.UpdateCategory(category))
-                {
-                    await res.SendStatus(HttpStatusCode.OK);
-                }
-                else
-                {
-                    await res.SendStatus(HttpStatusCode.InternalServerError);
-                }
-            });
-
-            server.Get("/categories", Auth, async (req, res) =>
-            {
-                var sessionData = req.GetSession<Session>().Data;
-                var categories = db.FindCategories(c => c.Owner == sessionData.Username);
-                await res.SendJson(categories);
-
-            });
-
-            server.Post("/user", async (req, res) =>
+   
+            server.Post("/register", async (req, res) =>
             {
                 var form = await req.GetFormDataAsync();
                 string username = form["username"];
                 string password = form["password"];
 
-                if (db.FindUser(u => u.Username == username) != null)
+                if (db.Find<User>(u => u.Username == username) != null)
                 {
                     await res.SendStatus(HttpStatusCode.BadRequest);
                     return;
@@ -130,7 +66,7 @@ namespace BolTDLServer.NetCore
                     Password = BCrypt.Net.BCrypt.HashPassword(password)
                 };
                 
-                if (db.InsertUser(user))
+                if (db.Insert(user))
                 {
                     await res.SendStatus(HttpStatusCode.OK);
                 }
@@ -139,8 +75,104 @@ namespace BolTDLServer.NetCore
                     await res.SendStatus(HttpStatusCode.BadRequest);
                 }
             });
+            
+            server.Get("/session", Auth, async (req, res) => await res.SendStatus(HttpStatusCode.OK));
+            
+            server.Get("/items", Auth, async (req, res) =>
+            {
+                var sessionData = req.GetSession<Session>().Data;
+                var items = db.Find<Item>(c => c.OwnerId == sessionData.Id);
+                await res.SendJson(items);
+            });
+            
+            server.Post("/item", Auth, CanParse<Item>, async (req, res) =>
+            {
+                var item = req.GetData<Item>();
 
+                var id = req.GetSession<Session>().Data.Id;
+                item.OwnerId = id;
+                
+                if (db.Insert(item))
+                {
+                    await res.SendStatus(HttpStatusCode.OK);
+                }
+                else
+                {
+                    await res.SendStatus(HttpStatusCode.InternalServerError);
+                }
+            });
+
+            server.Put("/item", Auth, CanParse<Item>, async (req, res) =>
+            {
+                var item = req.GetData<Item>();
+
+                var id = req.GetSession<Session>().Data.Id;
+                if (item.OwnerId != id)
+                {
+                    await res.SendStatus(HttpStatusCode.Unauthorized);
+                    return;
+                }
+
+                var existing = db.FindOne<Item>(i => i.Id == item.Id);
+                if (existing == null)
+                {
+                    await res.SendStatus(HttpStatusCode.NotFound);
+                    return;
+                }
+                
+                if (db.Update(item))
+                {
+                    await res.SendStatus(HttpStatusCode.OK);
+                }
+                else
+                {
+                    await res.SendStatus(HttpStatusCode.InternalServerError);
+                }
+            });
+            
+            server.Delete("/item", Auth, CanParse<Item>, async (req, res) =>
+            {
+                var item = req.GetData<Item>();
+
+                var id = req.GetSession<Session>().Data.Id;
+                if (item.OwnerId != id)
+                {
+                    await res.SendStatus(HttpStatusCode.Unauthorized);
+                    return;
+                }
+                
+                if (db.Delete(item))
+                {
+                    await res.SendStatus(HttpStatusCode.OK);
+                }
+                else
+                {
+                    await res.SendStatus(HttpStatusCode.InternalServerError);
+                }
+            });
+
+            
             server.Start();
+            Console.Read();
+        }
+        
+        private static async Task Auth(Request req, Response res)
+        {
+            var session = req.GetSession<Session>();
+            if (session == null)
+            {
+                await res.SendStatus(HttpStatusCode.Unauthorized);
+            }
+        }
+        private static async Task CanParse<T>(Request req, Response res)
+        {
+            var model = await req.ParseBodyAsync<T>();
+            if (model == null)
+            {
+                await res.SendStatus(HttpStatusCode.BadRequest);
+                return;
+            }
+            req.SetData(model);
         }
     }
 }

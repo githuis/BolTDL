@@ -3,10 +3,12 @@ using LiteDB;
 
 namespace BolTDLServer.NetCore
 {
-    public class Item
+    public class Item : IModel
     {
-        public string Id { get; set; } = Guid.NewGuid().ToString("N");
+        public Guid Id { get; set; } = Guid.NewGuid();
+        public Guid OwnerId { get; set; }
         public string Name { get; set; }
+        public string Category { get; set; }
         public string Description { get; set; }
     }
 }
