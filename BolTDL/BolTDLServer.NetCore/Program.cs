@@ -22,6 +22,10 @@ namespace BolTDLServer.NetCore
             var server = new RedHttpServer(3000, "D:\\Projects\\BolTDL-Webapp\\dist");
             var db = new LiteDatabase();
 
+            server.Use(new CookieSessions<Session>(new CookieSessionSettings(TimeSpan.FromDays(14))
+            {
+                Secure = false
+            }));
 
             server.Post("/login", async (req, res) =>
             {
@@ -33,7 +37,7 @@ namespace BolTDLServer.NetCore
                 var user = db.FindOne<User>(u => u.Username == username);
                 if (user == null || !BCrypt.Net.BCrypt.Verify(password, user.Password))
                 {
-                    await res.SendStatus(HttpStatusCode.Unauthorized);
+                    await res.SendStatus(HttpStatusCode.NotFound);
                     return;
                 }
                 
@@ -54,7 +58,8 @@ namespace BolTDLServer.NetCore
                 string username = form["username"];
                 string password = form["password"];
 
-                if (db.Find<User>(u => u.Username == username) != null)
+                var x = db.FindOne<User>(u => u.Username == username);
+                if (x != null)
                 {
                     await res.SendStatus(HttpStatusCode.BadRequest);
                     return;
@@ -68,6 +73,7 @@ namespace BolTDLServer.NetCore
                 
                 if (db.Insert(user))
                 {
+                    req.OpenSession(new Session {Id = user.Id});
                     await res.SendStatus(HttpStatusCode.OK);
                 }
                 else
