@@ -19,7 +19,7 @@ namespace BolTDLServer.NetCore
     {
         public static void Main(string[] args)
         {
-            var server = new RedHttpServer(3000, "D:\\Projects\\BolTDL-Webapp\\dist");
+            var server = new RedHttpServer(3000, "D:\\Daniel\\BolTDL-Webapp\\dist");
             var db = new LiteDatabase();
 
             server.Use(new CookieSessions<Session>(new CookieSessionSettings(TimeSpan.FromDays(14))
@@ -27,7 +27,7 @@ namespace BolTDLServer.NetCore
                 Secure = false
             }));
 
-            server.Post("/login", async (req, res) =>
+            server.Post("/api/login", async (req, res) =>
             {
                 var form = await req.GetFormDataAsync();
 
@@ -44,7 +44,7 @@ namespace BolTDLServer.NetCore
                 req.OpenSession(new Session{Id = user.Id});
                 await res.SendStatus(HttpStatusCode.OK);
             });
-            server.Post("/logout", Auth, async (req, res) =>
+            server.Post("/api/logout", Auth, async (req, res) =>
             {
                 req.GetSession<Session>().Close(req);
                 await res.SendStatus(HttpStatusCode.OK);
@@ -52,7 +52,7 @@ namespace BolTDLServer.NetCore
             
             
    
-            server.Post("/register", async (req, res) =>
+            server.Post("/api/register", async (req, res) =>
             {
                 var form = await req.GetFormDataAsync();
                 string username = form["username"];
@@ -82,16 +82,16 @@ namespace BolTDLServer.NetCore
                 }
             });
             
-            server.Get("/session", Auth, async (req, res) => await res.SendStatus(HttpStatusCode.OK));
+            server.Get("/api/session", Auth, async (req, res) => await res.SendStatus(HttpStatusCode.OK));
             
-            server.Get("/items", Auth, async (req, res) =>
+            server.Get("/api/items", Auth, async (req, res) =>
             {
                 var sessionData = req.GetSession<Session>().Data;
                 var items = db.Find<Item>(c => c.OwnerId == sessionData.Id);
                 await res.SendJson(items);
             });
             
-            server.Post("/item", Auth, CanParse<Item>, async (req, res) =>
+            server.Post("/api/item", Auth, CanParse<Item>, async (req, res) =>
             {
                 var item = req.GetData<Item>();
 
@@ -108,7 +108,7 @@ namespace BolTDLServer.NetCore
                 }
             });
 
-            server.Put("/item", Auth, CanParse<Item>, async (req, res) =>
+            server.Put("/api/item", Auth, CanParse<Item>, async (req, res) =>
             {
                 var item = req.GetData<Item>();
 
@@ -136,7 +136,7 @@ namespace BolTDLServer.NetCore
                 }
             });
             
-            server.Delete("/item", Auth, CanParse<Item>, async (req, res) =>
+            server.Delete("/api/item", Auth, CanParse<Item>, async (req, res) =>
             {
                 var item = req.GetData<Item>();
 
