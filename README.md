@@ -2,6 +2,9 @@
 Bolhuis' ToDo Lists: A tiny organization program with vim-like keybinds.
 Tested working on Windows 10 and Archlinux (x64).
 
+
+![](boltdl.gif)
+
 ## Build
 There are two ways to build. The first way is to open the solution with Visual Studio or something alike and build in release mode from there.
 
